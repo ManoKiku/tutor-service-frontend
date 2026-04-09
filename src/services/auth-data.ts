@@ -3,12 +3,13 @@ import { appConfig } from '../../next.config';
 import { isTokenExpired } from '@/lib/auth';
 
 const API_BASE_URL = appConfig.apiUrl;
+const ENDPOINT = 'Auth';
 let refreshPromise: Promise<AuthResponse> | null = null;
 
 export async function refreshToken(): Promise<AuthResponse> {
   const refreshToken = localStorage.getItem('refreshToken');
   
-  const response = await fetch(`${API_BASE_URL}/Auth/refresh`, {
+  const response = await fetch(`${API_BASE_URL}/${ENDPOINT}/refresh`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -26,7 +27,7 @@ export async function refreshToken(): Promise<AuthResponse> {
 }
 
 export async function login(credentials: LoginRequest): Promise<AuthResponse> {
-  const response = await fetch(`${API_BASE_URL}/Auth/login`, {
+  const response = await fetch(`${API_BASE_URL}/${ENDPOINT}/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -87,7 +88,7 @@ export async function fetchWithAuth<T>(url: string, options: RequestInit = {}, u
 }
 
 export async function register(registerData: RegisterRequest): Promise<AuthResponse> {
-  const response = await fetch(`${API_BASE_URL}/Auth/register`, {
+  const response = await fetch(`${API_BASE_URL}/${ENDPOINT}/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

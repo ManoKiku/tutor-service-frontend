@@ -1,9 +1,11 @@
 import { appConfig } from "../../next.config";
 import { fetchWithAuth } from "./auth-data";
 
+const ENDPOINT = 'tutor-posts';
+
 export async function getTutorPosts(params?: TutorPostRequest): Promise<TutorPost[]> {
     try {
-        const url = new URL(appConfig.apiUrl + '/tutor-posts/search');
+        const url = new URL(appConfig.apiUrl + `/${ENDPOINT}/search`);
         
         if (params) {
             Object.entries(params).forEach(([key, value]) => {
@@ -31,7 +33,7 @@ export async function getTutorPosts(params?: TutorPostRequest): Promise<TutorPos
 
 export async function getMyTutorPosts(status: number | null): Promise<TutorPost[]> {
     try {
-        const url = new URL(appConfig.apiUrl + '/tutor-posts/my');
+        const url = new URL(appConfig.apiUrl + `/${ENDPOINT}/my`);
         
 
         const response = await fetch(url.toString());
@@ -50,7 +52,7 @@ export async function getMyTutorPosts(status: number | null): Promise<TutorPost[
 
 export async function getTutorPostsByTutorId(id : string): Promise<TutorPost[]> {
     try {
-        const url = appConfig.apiUrl + '/tutor-posts/tutors/' + id;
+        const url = appConfig.apiUrl + `/${ENDPOINT}/tutors/` + id;
 
         const response = await fetch(url.toString());
         if (!response.ok) {
@@ -69,7 +71,7 @@ export async function getTutorPostsByTutorId(id : string): Promise<TutorPost[]> 
 
 export async function createTutorPost(data: CreateTutorPostRequest): Promise<TutorPost> {
   try {
-    const result = await fetchWithAuth('/tutor-posts', {
+    const result = await fetchWithAuth(`/${ENDPOINT}`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -83,7 +85,7 @@ export async function createTutorPost(data: CreateTutorPostRequest): Promise<Tut
 
 export async function updateTutorPost(id: string, data: UpdateTutorPostRequest): Promise<TutorPost> {
   try {
-    const result = await fetchWithAuth(`/tutor-posts/${id}`, {
+    const result = await fetchWithAuth(`/${ENDPOINT}/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
@@ -96,7 +98,7 @@ export async function updateTutorPost(id: string, data: UpdateTutorPostRequest):
 
 export async function deleteTutorPost(id: string): Promise<void> {
   try {
-    await fetchWithAuth(`/tutor-posts/${id}`, {
+    await fetchWithAuth(`/${ENDPOINT}/${id}`, {
       method: 'DELETE',
     });
   } catch (error) {
@@ -107,7 +109,7 @@ export async function deleteTutorPost(id: string): Promise<void> {
 
 export async function moderateTutorPost(id: string, status : number): Promise<void> {
   try {
-    await fetchWithAuth(`/tutor-posts/${id}/moderate?status=${status}`, {
+    await fetchWithAuth(`/${ENDPOINT}/${id}/moderate?status=${status}`, {
       method: 'POST',
     });
   } catch (error) {

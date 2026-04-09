@@ -2,10 +2,11 @@ import { appConfig } from "../../next.config";
 import { fetchWithAuth } from "./auth-data";
 
 const API_BASE_URL = appConfig.apiUrl;
+const ENDPOINT = 'Tags';
 
 export async function getTags(): Promise<Tag[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/Tags`);
+    const response = await fetch(`${API_BASE_URL}/${ENDPOINT}`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -18,7 +19,7 @@ export async function getTags(): Promise<Tag[]> {
 
 export async function createTag(data: CreateTagRequest): Promise<Tag> {
   try {
-    const result = await fetchWithAuth('/Tags', {
+    const result = await fetchWithAuth(`/${ENDPOINT}`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -31,7 +32,7 @@ export async function createTag(data: CreateTagRequest): Promise<Tag> {
 
 export async function deleteTag(id: number): Promise<void> {
   try {
-    await fetchWithAuth(`/Tags/${id}`, {
+    await fetchWithAuth(`/${ENDPOINT}/${id}`, {
       method: 'DELETE',
     });
   } catch (error) {

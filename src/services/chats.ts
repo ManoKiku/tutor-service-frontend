@@ -1,9 +1,11 @@
 import { getAuthData } from "@/lib/auth";
 import { fetchWithAuth } from "./auth-data";
 
+const ENDPOINT = 'Chats';
+
 export async function getChats(): Promise<Chat[]> {
   try {
-    const response = await fetchWithAuth<Chat[]>(`/Chats/my-chats`);
+    const response = await fetchWithAuth<Chat[]>(`/${ENDPOINT}/my-chats`);
 
     if(response == null)
         throw new Error("Access denied. No response was represented");
@@ -17,7 +19,7 @@ export async function getChats(): Promise<Chat[]> {
 
 export async function getChatMessages(chatId: string): Promise<Message[]> {
   try {
-    const response = await fetchWithAuth<Message[]>(`/Chats/${chatId}/messages`);
+    const response = await fetchWithAuth<Message[]>(`/${ENDPOINT}/${chatId}/messages`);
 
     if(response == null)
         throw new Error("Access denied. No response was represented");
@@ -31,7 +33,7 @@ export async function getChatMessages(chatId: string): Promise<Message[]> {
 
 export async function isHaveChatWithTutor(tutorId : string): Promise<Chat | null> {
   try {
-    const response = await fetchWithAuth<Chat>(`/Chats/tutor/${tutorId}`);
+    const response = await fetchWithAuth<Chat>(`/${ENDPOINT}/tutor/${tutorId}`);
 
     return response;
   } catch (error) {
@@ -47,7 +49,7 @@ export async function createChatWithTutor(tutorId : string): Promise<Chat | null
     if(user == null)
         throw new Error("User is not signed in")
 
-    const response = await fetchWithAuth<Chat>(`/Chats`, {
+    const response = await fetchWithAuth<Chat>(`/${ENDPOINT}`, {
         body: JSON.stringify({tutorId: tutorId, studentId: user.id}),
         method: 'POST'
     });

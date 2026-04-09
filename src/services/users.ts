@@ -2,9 +2,11 @@ import { User } from "@/types/auth";
 import { appConfig } from "../../next.config";
 import { fetchWithAuth } from "./auth-data";
 
+const ENDPOINT = 'Users';
+
 export async function getUserById(id: string): Promise<User | null> {
     try {
-        const url = appConfig.apiUrl + '/Users/' + id;
+        const url = appConfig.apiUrl + `/${ENDPOINT}/` + id;
 
         const response = await fetch(url.toString());
         if (!response.ok) {
@@ -22,7 +24,7 @@ export async function getUserById(id: string): Promise<User | null> {
 export async function getUsers(): Promise<User[]> {
     try {
 
-        const response = await fetchWithAuth<User[]>( '/Users/');
+        const response = await fetchWithAuth<User[]>(`/${ENDPOINT}/`);
 
         return response!;
     } catch (error) {
@@ -34,7 +36,7 @@ export async function getUsers(): Promise<User[]> {
 export async function deleteUser(id: string): Promise<boolean> {
     try {
 
-        await fetchWithAuth<User[]>('/Users/' + id, {method: 'DELETE'});
+        await fetchWithAuth<User[]>(`/${ENDPOINT}/` + id, {method: 'DELETE'});
 
         return true;
     } catch (error) {

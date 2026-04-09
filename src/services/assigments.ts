@@ -2,12 +2,14 @@ import { getAuthData } from "@/lib/auth";
 import { appConfig } from "../../next.config";
 import { fetchWithAuth } from "./auth-data";
 
+const ENDPOINT = 'Assignments';
+
 export async function uploadAssignment(data: CreateAssignmentRequest): Promise<Assignment> {
   const formData = new FormData();
   formData.append('lessonId', data.lessonId);
   formData.append('file', data.file);
 
-  const response = await fetchWithAuth(`/Assignments`, {
+  const response = await fetchWithAuth(`/${ENDPOINT}`, {
     method: 'POST',
     body: formData,
   }, false);
@@ -16,13 +18,13 @@ export async function uploadAssignment(data: CreateAssignmentRequest): Promise<A
 }
 
 export async function deleteAssignment(assignmentId: string): Promise<void> {
-  await fetchWithAuth(`/Assignments/${assignmentId}`, {
+  await fetchWithAuth(`/${ENDPOINT}/${assignmentId}`, {
     method: 'DELETE',
   });
 }
 
 export async function getAssignmentsByLessonId(lessonId: string): Promise<Assignment[]> {
-  const response = await fetchWithAuth(`/Assignments/lessons/${lessonId}/assignments`);
+  const response = await fetchWithAuth(`/${ENDPOINT}/lessons/${lessonId}/assignments`);
   return response as Assignment[];
 }
 
@@ -30,7 +32,7 @@ export async function getAssigmentDownloadUrl(assignment: Assignment): Promise<s
   try {
       const data = getAuthData(false); 
 
-      const response = await fetch(appConfig.apiUrl + `/Assignments/${assignment.id}/download`, {
+      const response = await fetch(appConfig.apiUrl + `/${ENDPOINT}/${assignment.id}/download`, {
         headers : {
             'Authorization' : `Bearer ${data.token}`
         }

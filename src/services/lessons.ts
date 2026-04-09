@@ -1,6 +1,8 @@
 import { appConfig } from "../../next.config";
 import { fetchWithAuth } from "./auth-data";
 
+const ENDPOINT = 'Lessons';
+
 export async function getLessons(data: GetLessonsRequest): Promise<Lesson[]> {
   try {
     let query: string = '';
@@ -12,7 +14,7 @@ export async function getLessons(data: GetLessonsRequest): Promise<Lesson[]> {
         });
     }
 
-    const response = await fetchWithAuth('/Lessons?' + query);
+    const response = await fetchWithAuth(`/${ENDPOINT}?` + query);
     
     return response as Lesson[];
   } catch (error) {
@@ -23,7 +25,7 @@ export async function getLessons(data: GetLessonsRequest): Promise<Lesson[]> {
 
 export async function createLesson(data: CreateLessonRequest): Promise<Lesson | null> {
   try {
-    const result = await fetchWithAuth('/Lessons', {
+    const result = await fetchWithAuth(`/${ENDPOINT}`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -36,7 +38,7 @@ export async function createLesson(data: CreateLessonRequest): Promise<Lesson | 
 
 export async function getLessonById(id: string): Promise<Lesson | null> {
   try {
-    const result = await fetchWithAuth(`/Lessons/${id}`);
+    const result = await fetchWithAuth(`/${ENDPOINT}/${id}`);
     return result as Lesson;
   } catch (error) {
     console.error('Error getting lesson:', error);
@@ -47,7 +49,7 @@ export async function getLessonById(id: string): Promise<Lesson | null> {
 
 export async function deleteLesson(id: string): Promise<void> {
   try {
-    await fetchWithAuth(`/Lessons/${id}`, {
+    await fetchWithAuth(`/${ENDPOINT}/${id}`, {
       method: 'DELETE',
     });
   } catch (error) {

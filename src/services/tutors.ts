@@ -1,9 +1,11 @@
 import { appConfig } from "../../next.config";
 import { fetchWithAuth } from "./auth-data";
 
+const ENDPOINT = 'Tutors';
+
 export async function getTutorsData(params?: TutorsRequest): Promise<Tutor[]> {
     try {
-        const url = new URL(appConfig.apiUrl + '/Tutors/search');
+        const url = new URL(appConfig.apiUrl + `/${ENDPOINT}/search`);
         
         if (params) {
             Object.entries(params).forEach(([key, value]) => {
@@ -28,7 +30,7 @@ export async function getTutorsData(params?: TutorsRequest): Promise<Tutor[]> {
 
 export async function getTutorProfileById(id : string): Promise<Tutor | null> {
     try {
-        const url = new URL(appConfig.apiUrl + '/Tutors/' + id);
+        const url = new URL(appConfig.apiUrl + `/${ENDPOINT}/` + id);
 
         const response = await fetch(url.toString());
         if (!response.ok) {
@@ -66,7 +68,7 @@ export async function updateTutorProfile(
 
   const method = 'PUT';
 
-  const response = await fetchWithAuth('/Tutors/profile', {
+  const response = await fetchWithAuth(`/${ENDPOINT}/profile`, {
     method,
     body: JSON.stringify(profileData),
   });
