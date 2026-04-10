@@ -2,7 +2,7 @@ import { getAuthData } from "@/lib/auth";
 import { appConfig } from "../../next.config";
 import { fetchWithAuth } from "./auth-data";
 
-const ENDPOINT = 'Assignments';
+const ENDPOINT = 'assignments';
 
 export async function uploadAssignment(data: CreateAssignmentRequest): Promise<Assignment> {
   const formData = new FormData();
@@ -12,6 +12,15 @@ export async function uploadAssignment(data: CreateAssignmentRequest): Promise<A
   const response = await fetchWithAuth(`/${ENDPOINT}`, {
     method: 'POST',
     body: formData,
+  }, false);
+  
+  return response as Assignment;
+}
+
+export async function uploadAssignmentFromSavedContent(savedContentId: string, lessonId: string): Promise<Assignment> {
+
+  const response = await fetchWithAuth(`/${ENDPOINT}/from-saved-content/${savedContentId}?lessonId=${lessonId}`, {
+    method: 'POST',
   }, false);
   
   return response as Assignment;

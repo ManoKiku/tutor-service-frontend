@@ -1,7 +1,7 @@
 import { appConfig } from "../../next.config";
 import { fetchWithAuth } from "./auth-data";
 
-const ENDPOINT = 'Tutors';
+const ENDPOINT = 'tutors';
 
 export async function getTutorsData(params?: TutorsRequest): Promise<Tutor[]> {
     try {

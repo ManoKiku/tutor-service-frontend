@@ -10,10 +10,11 @@ import {
 } from '@/services/lessons';
 
 import './relations.css';
-import { getAssignmentsByLessonId, uploadAssignment, deleteAssignment, getAssigmentDownloadUrl } from '@/services/assigments';
+import { getAssignmentsByLessonId, uploadAssignment, deleteAssignment, getAssigmentDownloadUrl, uploadAssignmentFromSavedContent } from '@/services/assignments';
 import { getMyStudents, getMyTutors, deleteRelation } from '@/services/relation';
 import { User } from '@/types/auth';
 import { appConfig } from '../../../next.config';
+import { deleteSavedContent, getSavedContent } from '@/services/saved-content';
 
 export default function RelationsPage() {
   const { user, tutorProfile, isAuthenticated, isLoading: authLoading, logout } = useAuth();
@@ -32,6 +33,10 @@ export default function RelationsPage() {
     endTime: ''
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const [savedContents, setSavedContents] = useState<SavedContentDto[] | null>(null);
+  const [showSavedContentSelector, setShowSavedContentSelector] = useState(false);
+  const [isLoadingSavedContents, setIsLoadingSavedContents] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -98,6 +103,25 @@ export default function RelationsPage() {
       console.error('Error loading assignments:', error);
     }
   }, [selectedLesson]);
+
+  const loadSavedContents = useCallback(async () => {
+    if (!isTutor) return;
+    try {
+      setIsLoadingSavedContents(true);
+      const contents = await getSavedContent();
+      setSavedContents(contents || []);
+    } catch (error) {
+      console.error('Error loading saved contents:', error);
+    } finally {
+      setIsLoadingSavedContents(false);
+    }
+  }, [isTutor]);
+
+  useEffect(() => {
+    if (showSavedContentSelector && isTutor && savedContents === null && !isLoadingSavedContents) {
+      loadSavedContents();
+    }
+  }, [showSavedContentSelector, isTutor, savedContents, isLoadingSavedContents, loadSavedContents]);
 
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
@@ -208,25 +232,38 @@ export default function RelationsPage() {
     }
   };
 
-const handleDownloadFile = async (assignment: Assignment) => {
-  const url = await getAssigmentDownloadUrl(assignment);
-  if (url) {
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = assignment.fileName || 'file';
-    link.target = '_blank';
-    
-    link.onclick = () => {
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url);
-      }, 100);
-    };
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const handleAddFromSavedContent = async (savedContentId: string) => {
+    if (!selectedLesson) return;
+    try {
+      await uploadAssignmentFromSavedContent(savedContentId, selectedLesson.id);
+      await loadAssignments();
+      setShowUploadForm(false);
+      setShowSavedContentSelector(false);
+    } catch (error) {
+      console.error('Error adding assignment from saved content:', error);
+      alert('Ошибка при добавлении файла из сохранённых');
+    }
+  };
+
+  const handleDownloadFile = async (assignment: Assignment) => {
+    const url = await getAssigmentDownloadUrl(assignment);
+    if (url) {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = assignment.fileName || 'file';
+      link.target = '_blank';
+      
+      link.onclick = () => {
+        setTimeout(() => {
+          window.URL.revokeObjectURL(url);
+        }, 100);
+      };
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   }
-}
 
   const getPersonFromRelation = (relation: Relation): string | undefined => {
     return isTutor ? relation.studentName : relation.tutorName;
@@ -266,7 +303,6 @@ const handleDownloadFile = async (assignment: Assignment) => {
               <h2>{isTutor ? 'Ученики' : 'Репетиторы'}</h2>
               {isLoading && <span className="loading-small">Загрузка...</span>}
             </div>
-            
             <div className="relations-list">
               {relations.length === 0 ? (
                 <div className="empty-message">
@@ -276,7 +312,6 @@ const handleDownloadFile = async (assignment: Assignment) => {
                 relations.map(relation => {
                   const person = getPersonFromRelation(relation);
                   const isSelected = selectedRelation?.id === relation.id;
-                  
                   return (
                     <div 
                       key={relation.id} 
@@ -287,9 +322,7 @@ const handleDownloadFile = async (assignment: Assignment) => {
                         {person?.charAt(0).toUpperCase() || 'U'}
                       </div>
                       <div className="relation-info">
-                        <div className="relation-name">
-                          {person}
-                        </div>
+                        <div className="relation-name">{person}</div>
                       </div>
                       {isTutor && (
                         <div className="relation-actions">
@@ -321,12 +354,9 @@ const handleDownloadFile = async (assignment: Assignment) => {
                       {getPersonFromRelation(selectedRelation)?.charAt(0).toUpperCase() || 'U'}
                     </div>
                     <div>
-                      <h3>
-                        {getPersonFromRelation(selectedRelation)}
-                      </h3>
+                      <h3>{getPersonFromRelation(selectedRelation)}</h3>
                     </div>
                   </div>
-                  
                   {isTutor && (
                     <button 
                       className="btn btn-primary"
@@ -351,7 +381,6 @@ const handleDownloadFile = async (assignment: Assignment) => {
                           className="form-input"
                         />
                       </div>
-                      
                       <div className="form-row">
                         <div className="form-group">
                           <label>Дата и время начала</label>
@@ -363,7 +392,6 @@ const handleDownloadFile = async (assignment: Assignment) => {
                             className="form-input"
                           />
                         </div>
-                        
                         <div className="form-group">
                           <label>Дата и время окончания</label>
                           <input
@@ -375,11 +403,8 @@ const handleDownloadFile = async (assignment: Assignment) => {
                           />
                         </div>
                       </div>
-                      
                       <div className="form-actions">
-                        <button type="submit" className="btn btn-primary">
-                          Создать урок
-                        </button>
+                        <button type="submit" className="btn btn-primary">Создать урок</button>
                       </div>
                     </form>
                   </div>
@@ -387,11 +412,8 @@ const handleDownloadFile = async (assignment: Assignment) => {
 
                 <div className="lessons-section">
                   <h4>Уроки</h4>
-                  
                   {lessons.length === 0 ? (
-                    <div className="empty-message">
-                      Уроков пока нет
-                    </div>
+                    <div className="empty-message">Уроков пока нет</div>
                   ) : (
                     <div className="lessons-list">
                       {lessons.map(lesson => (
@@ -409,7 +431,6 @@ const handleDownloadFile = async (assignment: Assignment) => {
                               </span>
                             </div>
                           </div>
-                          
                           {isTutor && (
                             <button 
                               className="btn-icon btn-danger"
@@ -435,7 +456,10 @@ const handleDownloadFile = async (assignment: Assignment) => {
                       {isTutor && (
                         <button 
                           className="btn btn-secondary btn-small"
-                          onClick={() => setShowUploadForm(!showUploadForm)}
+                          onClick={() => {
+                            setShowUploadForm(!showUploadForm);
+                            setShowSavedContentSelector(false);
+                          }}
                         >
                           {showUploadForm ? 'Отмена' : 'Добавить файл'}
                         </button>
@@ -444,35 +468,73 @@ const handleDownloadFile = async (assignment: Assignment) => {
 
                     {showUploadForm && isTutor && (
                       <div className="card upload-file-form">
-                        <form onSubmit={handleUploadFile}>
-                          <div className="form-group">
-                            <label>Выберите файл</label>
-                            <input
-                              type="file"
-                              onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                              required
-                              className="form-input"
-                            />
+                        <div className="upload-tabs">
+                          <button
+                            type="button"
+                            className={`tab-button ${!showSavedContentSelector ? 'active' : ''}`}
+                            onClick={() => setShowSavedContentSelector(false)}
+                          >
+                            Загрузить новый
+                          </button>
+                          <button
+                            type="button"
+                            className={`tab-button ${showSavedContentSelector ? 'active' : ''}`}
+                            onClick={() => setShowSavedContentSelector(true)}
+                          >
+                            Выбрать из сохранённых
+                          </button>
+                        </div>
+
+                        {!showSavedContentSelector ? (
+                          <form onSubmit={handleUploadFile}>
+                            <div className="form-group">
+                              <label>Выберите файл</label>
+                              <input
+                                type="file"
+                                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                                required
+                                className="form-input"
+                              />
+                            </div>
+                            <div className="form-actions">
+                              <button type="submit" className="btn btn-primary" disabled={!selectedFile}>
+                                Загрузить
+                              </button>
+                            </div>
+                          </form>
+                        ) : (
+                          <div className="saved-contents-list">
+                            {isLoadingSavedContents && <div className="loading-small">Загрузка списка...</div>}
+                            {!isLoadingSavedContents && savedContents && savedContents.length === 0 && (
+                              <div className="empty-message">Нет сохранённых файлов. Сначала загрузите файлы в раздел "Мои файлы".</div>
+                            )}
+                            {savedContents && savedContents.map(content => (
+                              <div key={content.id} className="saved-content-item">
+                                <div className="saved-content-info">
+                                  <div className="saved-content-name">{content.fileName}</div>
+                                  <div className="saved-content-details">
+                                    <span>{(content.fileSize / 1024).toFixed(2)} KB</span>
+                                    <span>{new Date(content.createdAt).toLocaleDateString()}</span>
+                                  </div>
+                                </div>
+                                <div className="saved-content-actions">
+                                  <button
+                                    className="btn btn-primary btn-small"
+                                    onClick={() => handleAddFromSavedContent(content.id)}
+                                  >
+                                    Добавить к уроку
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                          
-                          <div className="form-actions">
-                            <button 
-                              type="submit" 
-                              className="btn btn-primary"
-                              disabled={!selectedFile}
-                            >
-                              Загрузить
-                            </button>
-                          </div>
-                        </form>
+                        )}
                       </div>
                     )}
 
                     <div className="assignments-list">
                       {assignments.length === 0 ? (
-                        <div className="empty-message">
-                          Файлов пока нет
-                        </div>
+                        <div className="empty-message">Файлов пока нет</div>
                       ) : (
                         assignments.map(assignment => (
                           <div key={assignment.id} className="assignment-item">
@@ -487,16 +549,13 @@ const handleDownloadFile = async (assignment: Assignment) => {
                                 </span>
                               </div>
                             </div>
-                            
                             <div className="assignment-actions">
                               <button 
-                                onClick={async () => ( await handleDownloadFile(assignment))}
-                                rel="noopener noreferrer"
+                                onClick={() => handleDownloadFile(assignment)}
                                 className="btn btn-secondary btn-small"
                               >
                                 Скачать
                               </button>
-                              
                               {isTutor && (
                                 <button 
                                   className="btn btn-danger btn-small"

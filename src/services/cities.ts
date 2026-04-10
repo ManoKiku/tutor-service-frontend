@@ -2,7 +2,7 @@ import { appConfig } from '../../next.config';
 import { fetchWithAuth } from './auth-data';
 
 const API_BASE_URL = appConfig.apiUrl;
-const ENDPOINT = 'Cities';
+const ENDPOINT = 'cities';
 
 export async function getCities(): Promise<City[]> {
   try {

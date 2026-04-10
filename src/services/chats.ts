@@ -1,7 +1,7 @@
 import { getAuthData } from "@/lib/auth";
 import { fetchWithAuth } from "./auth-data";
 
-const ENDPOINT = 'Chats';
+const ENDPOINT = 'chats';
 
 export async function getChats(): Promise<Chat[]> {
   try {

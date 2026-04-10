@@ -1,6 +1,6 @@
 import { fetchWithAuth } from "./auth-data";
 
-const ENDPOINT = 'StudentTutorRelations';
+const ENDPOINT = 'student-tutor-relations';
 
 export async function checkRelation(studentId: string, tutorId: string): Promise<Relation | null> {
   try {

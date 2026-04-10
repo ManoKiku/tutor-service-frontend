@@ -2,7 +2,7 @@ import { appConfig } from '../../next.config';
 import { fetchWithAuth } from './auth-data';
 
 const API_BASE_URL = appConfig.apiUrl;
-const ENDPOINT = 'Categories';
+const ENDPOINT = 'categories';
 
 export async function getCategories(): Promise<Category[]> {
   try {

@@ -138,7 +138,7 @@ export default function RootLayout({
                     <li>
                       <a 
                         href="/relations" 
-                        className={`nav-link ${isActive('/my-tutors') ? 'active' : ''}`}
+                        className={`nav-link ${isActive('/relations') ? 'active' : ''}`}
                         onClick={closeSidebar}
                       >
                         Мои репетиторы
@@ -148,7 +148,7 @@ export default function RootLayout({
                     <li>
                       <a 
                         href="/relations" 
-                        className={`nav-link ${isActive('/my-tutors') ? 'active' : ''}`}
+                        className={`nav-link ${isActive('/relations') ? 'active' : ''}`}
                         onClick={closeSidebar}
                       >
                         Мои ученики
@@ -166,6 +166,20 @@ export default function RootLayout({
                             onClick={closeSidebar}
                           >
                             Мой профиль
+                          </a>
+                        </li>
+                      </>
+                    )}
+
+                    {isTutorUser && (
+                      <>
+                        <li>
+                          <a 
+                            href="/saved-content" 
+                            className={`nav-link ${isActive('/saved-content') ? 'active' : ''}`}
+                            onClick={closeSidebar}
+                          >
+                            Сохраненные файлы
                           </a>
                         </li>
                       </>

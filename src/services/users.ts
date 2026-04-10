@@ -2,7 +2,7 @@ import { User } from "@/types/auth";
 import { appConfig } from "../../next.config";
 import { fetchWithAuth } from "./auth-data";
 
-const ENDPOINT = 'Users';
+const ENDPOINT = 'users';
 
 export async function getUserById(id: string): Promise<User | null> {
     try {

@@ -28,6 +28,7 @@ export default function TutorPostCard({ post }: TutorPostCardProps) {
         if(confirm("Вы хотите создать чат с репетитором?"))
         {
           await createChatWithTutor(post.tutorId);
+          window.location.href = "/chats";
         }
       }
       else {

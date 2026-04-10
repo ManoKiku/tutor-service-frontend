@@ -3,7 +3,7 @@ import { appConfig } from '../../next.config';
 import { isTokenExpired } from '@/lib/auth';
 
 const API_BASE_URL = appConfig.apiUrl;
-const ENDPOINT = 'Auth';
+const ENDPOINT = 'auth';
 let refreshPromise: Promise<AuthResponse> | null = null;
 
 export async function refreshToken(): Promise<AuthResponse> {
