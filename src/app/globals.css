@@ -73,6 +73,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  transition: var(--transition-smooth);
 }
 
 .header {
@@ -312,7 +313,6 @@ body {
   margin-left: auto;
   margin-right: auto;
   width: 100%;
-  transition: var(--transition-smooth);
 }
 
 .main-content h1 {

@@ -14,7 +14,7 @@ import { saveTutorProfile } from '@/lib/auth';
 
 export default function TutorProfilePage() {
   const router = useRouter();
-  const { user, isAuthenticated, tutorProfile } = useAuth();
+  const { user, isAuthenticated, tutorProfile, isLoading } = useAuth();
   const [tutor, setTutor] = useState<Tutor>();
   const [posts, setPosts] = useState<TutorPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,26 +39,43 @@ export default function TutorProfilePage() {
   const [selectedSubcategory, setSelectedSubcategory] = useState('');
   const [updatingProfile, setUpdatingProfile] = useState(false);
 
-
   useEffect(() => {
-    const loadData = async () => {      
+    if (isLoading) return;
+
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    if (user.role !== 1) {
+      router.push('/');
+      return;
+    }
+
+    let isMounted = true;
+    const abortController = new AbortController();
+
+
+    const loadData = async () => {
+
+
+      setLoading(true);
       try {
         if (tutorProfile) {
+          if (!isMounted) return;
+          console.log(user);
           setTutor(tutorProfile);
           setIsOwner(true);
-
           setEditData({
             bio: tutorProfile.bio || '',
             education: tutorProfile.education || '',
             experienceYears: tutorProfile.experienceYears || 0,
-            hourlyRate: tutorProfile.hourlyRate || 0
+            hourlyRate: tutorProfile.hourlyRate || 0,
           });
-          
+
           const tutorPosts = await getTutorPostsByTutorId(tutorProfile.id);
+          if (!isMounted) return;
           setPosts(tutorPosts);
-        }
-        else
-        {
+        } else {
           const request : UpdateTutorRequest = {
             bio : '',
             education: '',
@@ -66,19 +83,25 @@ export default function TutorProfilePage() {
             hourlyRate: 0
           };
           const profile = await updateTutorProfile(request);
+          if (!isMounted) return;
+          saveTutorProfile(profile);
           setTutor(profile);
+          setIsOwner(true);
         }
       } catch (error) {
-        console.error('Error loading tutor profile:', error);
+          console.error('Error loading tutor profile:', error);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
-    if (tutorProfile) {
-      loadData();
-    }
-  }, [tutorProfile]);
+    loadData();
+
+    return () => {
+      isMounted = false;
+      abortController.abort();
+    };
+  }, [user, tutorProfile]);
 
   useEffect(() => {
     if (showModal) {
