@@ -14,7 +14,7 @@ import { createChatWithTutor, isHaveChatWithTutor } from '@/services/chats';
 
 export default function PublicTutorProfilePage() {
   const params = useParams();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, tutorProfile } = useAuth();
   const [tutor, setTutor] = useState<Tutor | null>(null);
   const [tutorAccount, setAccount] = useState<User | null>(null);
   const [posts, setPosts] = useState<TutorPost[]>([]);
@@ -36,6 +36,7 @@ export default function PublicTutorProfilePage() {
         if(confirm("Вы хотите создать чат с репетитором?"))
         {
           await createChatWithTutor(tutor?.id!);
+          window.location.href = "/chats";
         }
       }
       else {
@@ -59,6 +60,13 @@ export default function PublicTutorProfilePage() {
     const loadData = async () => {
       try {
         const tutorId = params.id as string;
+
+        if(tutorProfile?.id == tutorId)
+        {
+          window.location.href = "/tutor/profile";
+          return;
+        }
+
         const tutorData = await getTutorProfileById(tutorId);
         setTutor(tutorData);
         if(tutorData)

@@ -9,6 +9,9 @@ import { appConfig } from '../../../next.config';
 import { initSignalRConnection } from '@/lib/signalr';
 import { addRelation, checkRelation } from '@/services/relation';
 import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
+import { getTutorProfileById } from '@/services/tutors';
+
 
 export default function ChatsPage() {
   const [chats, setChats] = useState<Chat[]>([]);
@@ -23,6 +26,9 @@ export default function ChatsPage() {
   const connectionStartedRef = useRef(false);
   const {tutorId, user} = useAuth();
   const [relation, setRelation] = useState<Relation | null>(null)
+
+  const router = useRouter();
+
 
   useEffect(() => {
     selectedChatRef.current = selectedChat;
@@ -168,9 +174,6 @@ export default function ChatsPage() {
     loadMessages();
   }, [selectedChat, connection]);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
 
   useEffect(() => {
     const getRelation = async () => {
@@ -216,6 +219,18 @@ export default function ChatsPage() {
     const relation = await addRelation(selectedChat.studentId);
     setRelation(relation);
   }
+
+  const startVideoCall = async () => {
+    if (!selectedChat || !user) return;
+
+    const tutor = await getTutorProfileById(selectedChat.tutorId);
+    const tutorUserId = tutor?.userId;
+
+    const targetUserId = tutorUserId === user.id 
+      ? selectedChat.studentId 
+      : tutorUserId;
+    router.push(`/video-call/${selectedChat.id}?targetUserId=${targetUserId}`);
+  };
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -299,17 +314,21 @@ export default function ChatsPage() {
                     ? selectedChat.studentName
                     : selectedChat.tutorName}
                 </h3>
-                <div className={`${styles.userStatus} ${isConnected ? styles.online : styles.offline}`}>
-                </div>
-                {tutorId != null && relation == null && (
+              </div>
+              {tutorId != null && relation == null && (
                     
-                    <button 
-                        className="btn btn-primary btn-large"
-                        onClick={addNewRelation}
-                    >Добавить в ученики</button>
+                <button 
+                    className="btn btn-primary btn-large"
+                    onClick={addNewRelation}
+                >Добавить в ученики</button>
                 
                 )}
-              </div>
+                <button 
+                  className="btn btn-primary"
+                  onClick={startVideoCall}
+                >
+                  Начать звонок
+              </button>
             </div>
 
             <div className={styles.messagesContainer}>

@@ -18,6 +18,11 @@ export async function refreshToken(): Promise<AuthResponse> {
   });
 
   if (!response.ok) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('tutorId');
+    localStorage.removeItem('tutorProfile');
+
     throw new Error('Failed to refresh token');
   }
 

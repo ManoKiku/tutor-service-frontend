@@ -326,7 +326,7 @@ body {
 
 @media (min-width: 769px) {
   .container.sidebar-open .main-content {
-    margin-left: 300px;
+    margin-left: 20vw;
   }
   
   .sidebar-overlay {

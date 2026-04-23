@@ -148,6 +148,14 @@
   display: flex;
   align-items: center;
   background-color: white;
+  gap: 10px;
+}
+
+.headerActions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 8px;
 }
 
 .chatHeaderAvatar {

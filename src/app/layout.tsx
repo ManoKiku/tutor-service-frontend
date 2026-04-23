@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import './globals.css';
+import { refreshToken } from '@/services/auth-data';
 
 export default function RootLayout({
   children,
@@ -17,6 +18,10 @@ export default function RootLayout({
   const router = useRouter();
 
   useEffect(() => {
+    if(!isAuthenticated && user !== null)
+    {
+      refreshToken();
+    } 
     if (user) {
       const name = `${user.firstName} ${user.lastName}`.trim();
       setUserName(name || user.email);
