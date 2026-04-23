@@ -18,10 +18,6 @@ export default function RootLayout({
   const router = useRouter();
 
   useEffect(() => {
-    if(!isAuthenticated && user !== null)
-    {
-      refreshToken();
-    } 
     if (user) {
       const name = `${user.firstName} ${user.lastName}`.trim();
       setUserName(name || user.email);

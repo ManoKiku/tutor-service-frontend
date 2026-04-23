@@ -7,6 +7,7 @@ import { getAuthData } from '@/lib/auth';
 import styles from './VideoCallPage.module.css';
 import { appConfig } from '../../../../next.config';
 import { useAuth } from '@/hooks/useAuth';
+import { FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash, FaPhoneSlash } from 'react-icons/fa';
 
 const configuration: RTCConfiguration = {
   iceServers: [
@@ -354,7 +355,11 @@ export default function VideoCallPage() {
     <div className={styles.container}>
       <div className={styles.remoteVideoWrapper}>
         <video ref={remoteVideoRef} autoPlay playsInline className={styles.remoteVideo} />
-        {!remoteMicrophoneEnabled && <div className={styles.micOffIcon}>🎤❌</div>}
+        {!remoteMicrophoneEnabled && (
+          <div className={styles.micOffIcon}>
+            <FaMicrophoneSlash />
+          </div>
+        )}
         {isReconnecting && <div className={styles.reconnectingOverlay}>Попытка восстановления соединения...</div>}
       </div>
       
@@ -368,13 +373,13 @@ export default function VideoCallPage() {
       
       <div className={`${styles.controls} ${showControls ? styles.visible : styles.hidden}`}>
         <button onClick={toggleMic} className={styles.controlBtn}>
-          {isMicMuted ? '🎤❌' : '🎤'}
+          {isMicMuted ? <FaMicrophoneSlash /> : <FaMicrophone />}
         </button>
         <button onClick={toggleCamera} className={styles.controlBtn}>
-          {isCameraOff ? '📷❌' : '📷'}
+          {isCameraOff ? <FaVideoSlash /> : <FaVideo />}
         </button>
         <button onClick={() => endCall()} className={`${styles.controlBtn} ${styles.endCallBtn}`}>
-          📞❌
+          <FaPhoneSlash />
         </button>
       </div>
     </div>

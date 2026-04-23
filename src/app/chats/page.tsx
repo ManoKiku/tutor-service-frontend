@@ -6,7 +6,7 @@ import { isAuthenticated, getCurrentUser, getAuthData } from '@/lib/auth';
 import { getChatMessages, getChats } from '@/services/chats';
 import styles from './ChatsPage.module.css';
 import { appConfig } from '../../../next.config';
-import { initSignalRConnection } from '@/lib/signalr';
+import { FaCheck, FaCheckDouble, FaComments } from 'react-icons/fa';
 import { addRelation, checkRelation } from '@/services/relation';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
@@ -71,6 +71,9 @@ export default function ChatsPage() {
       const newConnection = new HubConnectionBuilder()
         .withUrl(appConfig.chatHubUrl, {
           accessTokenFactory: () => token,
+          headers: {
+            "ngrok-skip-browser-warning": "true"
+          }
         })
         .withAutomaticReconnect()
         .build();
@@ -355,7 +358,7 @@ export default function ChatsPage() {
                             {formatDate(message.sentAt)}
                             {isOwnMessage && (
                               <span className={styles.messageStatus}>
-                                {message.isRead ? '✓✓' : '✓'}
+                                {message.isRead ? <FaCheckDouble /> : <FaCheck />}
                               </span>
                             )}
                           </div>
@@ -390,7 +393,7 @@ export default function ChatsPage() {
           </>
         ) : (
           <div className={styles.noChatSelected}>
-            <div className={styles.noChatIcon}>💬</div>
+            <div className={styles.noChatIcon}><FaComments /></div>
             <h3>Выберите чат для общения</h3>
             <p>Выберите чат из списка слева, чтобы начать переписку</p>
           </div>

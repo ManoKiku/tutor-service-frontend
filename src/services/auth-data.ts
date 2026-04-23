@@ -8,13 +8,17 @@ let refreshPromise: Promise<AuthResponse> | null = null;
 
 export async function refreshToken(): Promise<AuthResponse> {
   const refreshToken = localStorage.getItem('refreshToken');
-  
-  const response = await fetch(`${API_BASE_URL}/${ENDPOINT}/refresh`, {
+  const token = localStorage.getItem('token');
+  if (!refreshToken) {
+    throw new Error('No refresh token available');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/${ENDPOINT}/refresh-token`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ refreshToken }),
+    body: JSON.stringify({ token, refreshToken }),
   });
 
   if (!response.ok) {
@@ -22,12 +26,13 @@ export async function refreshToken(): Promise<AuthResponse> {
     localStorage.removeItem('user');
     localStorage.removeItem('tutorId');
     localStorage.removeItem('tutorProfile');
-
+    localStorage.removeItem('token_expiration');
     throw new Error('Failed to refresh token');
   }
 
   const data = await response.json();
   localStorage.setItem('token', data.token);
+  localStorage.setItem('token_expiration', data.expiration);
   return data as AuthResponse;
 }
 
@@ -49,23 +54,24 @@ export async function login(credentials: LoginRequest): Promise<AuthResponse> {
 }
 
 export async function fetchWithAuth<T>(url: string, options: RequestInit = {}, useAppJson: boolean = true): Promise<T | null> {
-    let token = localStorage.getItem('token');
-  
+  let token = localStorage.getItem('token');
+
   if (token && isTokenExpired(token)) {
     if (!refreshPromise) {
-      refreshPromise = refreshToken().finally(() => {
-        refreshPromise = null;
-      });
+      refreshPromise = refreshToken()
+        .finally(() => {
+          refreshPromise = null;
+        });
     }
-    token = (await refreshPromise).token;
+    const refreshedData = await refreshPromise;
+    token = refreshedData.token;
   }
-  
-  const headers : any = {
+
+  const headers: any = {
     ...options.headers,
   };
 
-  if(useAppJson)
-  {
+  if (useAppJson) {
     headers['Content-Type'] = 'application/json';
   }
 
@@ -86,10 +92,10 @@ export async function fetchWithAuth<T>(url: string, options: RequestInit = {}, u
     throw new Error(error.message || 'Request failed');
   }
 
-    if (response.status === 204) {
-      return null; 
-    }
-    return response.json(); 
+  if (response.status === 204) {
+    return null;
+  }
+  return response.json();
 }
 
 export async function register(registerData: RegisterRequest): Promise<AuthResponse> {

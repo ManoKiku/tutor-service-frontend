@@ -48,6 +48,7 @@ export function getAuthData(clearDataIfExpired: boolean = true): {
 
   if (clearDataIfExpired && token && isTokenExpired(token)) {
     clearAuthData();
+    return { token: null, user: null, tutorId: null, tutorProfile: null };
   }
 
   return { token, user, tutorId, tutorProfile };

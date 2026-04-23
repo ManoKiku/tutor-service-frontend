@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-
+import { FaUser } from 'react-icons/fa';
 import { 
   getLessons, 
   createLesson, 
@@ -12,8 +12,6 @@ import {
 import './relations.css';
 import { getAssignmentsByLessonId, uploadAssignment, deleteAssignment, getAssigmentDownloadUrl, uploadAssignmentFromSavedContent } from '@/services/assignments';
 import { getMyStudents, getMyTutors, deleteRelation } from '@/services/relation';
-import { User } from '@/types/auth';
-import { appConfig } from '../../../next.config';
 import { deleteSavedContent, getSavedContent } from '@/services/saved-content';
 
 export default function RelationsPage() {
@@ -574,7 +572,7 @@ export default function RelationsPage() {
               </>
             ) : (
               <div className="empty-state">
-                <div className="empty-icon">👤</div>
+                <div className="empty-icon"><FaUser /></div>
                 <h3>Выберите {isTutor ? 'ученика' : 'репетитора'}</h3>
                 <p>
                   {isTutor 
