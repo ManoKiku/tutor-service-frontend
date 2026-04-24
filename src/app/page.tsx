@@ -4,7 +4,11 @@ import './home.css';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function Home() {
-  const {isAuthenticated} = useAuth();
+  const {isAuthenticated, isLoading} = useAuth();
+
+  if(isLoading) {
+    return;
+  }
 
   return (
     <div className="home-container">

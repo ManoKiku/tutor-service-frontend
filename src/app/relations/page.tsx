@@ -37,6 +37,7 @@ export default function RelationsPage() {
   const [isLoadingSavedContents, setIsLoadingSavedContents] = useState(false);
 
   useEffect(() => {
+    if(authLoading) return;
     if (user) {
       const userIsTutor = user.role === 1 || user.role === 'Tutor' || tutorProfile !== null;
       setIsTutor(userIsTutor);
@@ -302,7 +303,7 @@ export default function RelationsPage() {
               {isLoading && <span className="loading-small">Загрузка...</span>}
             </div>
             <div className="relations-list">
-              {relations.length === 0 ? (
+              {relations.length === 0 && !isLoading ? (
                 <div className="empty-message">
                   {isTutor ? 'У вас пока нет учеников' : 'У вас пока нет репетиторов'}
                 </div>
@@ -410,7 +411,7 @@ export default function RelationsPage() {
 
                 <div className="lessons-section">
                   <h4>Уроки</h4>
-                  {lessons.length === 0 ? (
+                  {lessons.length === 0 && !isLoading? (
                     <div className="empty-message">Уроков пока нет</div>
                   ) : (
                     <div className="lessons-list">
@@ -531,7 +532,7 @@ export default function RelationsPage() {
                     )}
 
                     <div className="assignments-list">
-                      {assignments.length === 0 ? (
+                      {assignments.length === 0 && !isLoading? (
                         <div className="empty-message">Файлов пока нет</div>
                       ) : (
                         assignments.map(assignment => (

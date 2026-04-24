@@ -239,7 +239,10 @@ export default function AdminPage() {
               <ul className={styles.entityList}>
                 {categories.map(cat => (
                   <li key={cat.id} className={styles.entityItem}>
-                    <span>{cat.name}</span>
+                    <div>
+                      <strong>{cat.name}</strong>
+                      <em>Id: {cat.id}</em>
+                    </div>  
                     <button
                       onClick={() => handleDeleteCategory(cat.id)}
                       className="btn btn-danger btn-small"
@@ -275,7 +278,7 @@ export default function AdminPage() {
                 >
                   <option value={0}>Выберите категорию</option>
                   {categories.map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    <option key={cat.id} value={cat.id}>{cat.name}, Id: {cat.id}</option>
                   ))}
                 </select>
               </div>
@@ -291,8 +294,9 @@ export default function AdminPage() {
                   <li key={sub.id} className={styles.entityItem}>
                     <div>
                       <strong>{sub.name}</strong>
+                      <em>Id: {sub.id}</em>
                       <div className={styles.subInfo}>
-                        Категория ID: {sub.categoryId}
+                        Категория: {categories.find(c => c.id === sub.categoryId)?.name}, Id: {sub.categoryId}
                       </div>
                     </div>
                     <button
@@ -330,7 +334,7 @@ export default function AdminPage() {
                 >
                   <option value={0}>Выберите подкатегорию</option>
                   {subcategories.map(sub => (
-                    <option key={sub.id} value={sub.id}>{sub.name}</option>
+                    <option key={sub.id} value={sub.id}>{sub.name}, Id: {sub.id}</option>
                   ))}
                 </select>
               </div>
@@ -346,8 +350,9 @@ export default function AdminPage() {
                   <li key={subject.id} className={styles.entityItem}>
                     <div>
                       <strong>{subject.name}</strong>
+                      <em>Id: {subject.id}</em>
                       <div className={styles.subInfo}>
-                        Подкатегория ID: {subject.subcategoryId}
+                        Подкатегория: {subcategories.find(sc => sc.id === subject.subcategoryId)?.name}, Id: {subject.subcategoryId}
                       </div>
                     </div>
                     <button
