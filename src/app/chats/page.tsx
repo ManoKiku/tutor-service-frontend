@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback, use } from 'react';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { isAuthenticated, getCurrentUser, getAuthData } from '@/lib/auth';
 import { getChatMessages, getChats } from '@/services/chats';
-import styles from './ChatsPage.module.css';
+import './chats.css';
 import { appConfig } from '../../../next.config';
 import { FaCheck, FaCheckDouble, FaComments } from 'react-icons/fa';
 import { addRelation, checkRelation } from '@/services/relation';
@@ -241,25 +241,25 @@ export default function ChatsPage() {
 
   if (loading) {
     return (
-      <div className={styles.container}>
-        <div className={styles.loading}>Загрузка чатов...</div>
+      <div className={"chat-container"}>
+        <div className={"loading"}>Загрузка чатов...</div>
       </div>
     );
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.chatsSidebar}>
-        <div className={styles.sidebarHeader}>
+    <div className={"chat-container"}>
+      <div className={"chats-sidebar"}>
+        <div className={"chats-sidebar-header"}>
           <h2>Чаты</h2>
-          <div className={`${styles.connectionStatus} ${isConnected ? styles.connected : styles.disconnected}`}>
+          <div className={`${"connection-status"} ${isConnected ? "connected" : "disconnected"}`}>
             {isConnected ? 'Онлайн' : 'Офлайн'}
           </div>
         </div>
         
-        <div className={styles.chatsList}>
+        <div className={"chats-list"}>
           {chats.length === 0 ? (
-            <div className={styles.noChats}>У вас пока нет чатов</div>
+            <div className={"no-chats"}>У вас пока нет чатов</div>
           ) : (
             chats.map(chat => {
               const displayName = chat.tutorId === tutorId ? chat.studentName : chat.tutorName;
@@ -269,28 +269,28 @@ export default function ChatsPage() {
               return (
                 <div
                   key={chat.id}
-                  className={`${styles.chatItem} ${selectedChat?.id === chat.id ? styles.active : ''}`}
+                  className={`${"chat-item"} ${selectedChat?.id === chat.id ? "active" : ''}`}
                   onClick={() => setSelectedChat(chat)}
                 >
-                  <div className={styles.chatAvatar}>
+                  <div className={"chat-avatar"}>
                     {initials}
                   </div>
-                  <div className={styles.chatInfo}>
-                    <div className={styles.chatName}>{displayName}</div>
-                    <div className={styles.lastMessage}>
+                  <div className={"chat-info"}>
+                    <div className={"chat-name"}>{displayName}</div>
+                    <div className={"last-message"}>
                       {lastMessageText.length > 30 
                         ? `${lastMessageText.substring(0, 30)}...` 
                         : lastMessageText}
                     </div>
                   </div>
-                  <div className={styles.chatMeta}>
+                  <div className={"chat-meta"}>
                     {chat.lastMessage && (
-                      <div className={styles.lastMessageTime}>
+                      <div className={"last-message-time"}>
                         {formatDate(chat.lastMessage.sentAt)}
                       </div>
                     )}
                     {chat.unreadCount > 0 && (
-                      <div className={styles.unreadBadge}>
+                      <div className={"unread-badge"}>
                         {chat.unreadCount}
                       </div>
                     )}
@@ -302,16 +302,16 @@ export default function ChatsPage() {
         </div>
       </div>
 
-      <div className={styles.chatArea}>
+      <div className={"chat-area"}>
         {selectedChat ? (
           <>
-            <div className={styles.chatHeader}>
-              <div className={styles.chatHeaderAvatar}>
+            <div className={"chat-header"}>
+              <div className={"chat-header-avatar"}>
                 {selectedChat.tutorId === tutorId 
                   ? selectedChat.studentName.charAt(0).toUpperCase()
                   : selectedChat.tutorName.charAt(0).toUpperCase()}
               </div>
-              <div className={styles.chatHeaderInfo}>
+              <div className={"chatH-header-info"}>
                 <h3>
                   {selectedChat.tutorId === tutorId
                     ? selectedChat.studentName
@@ -334,30 +334,30 @@ export default function ChatsPage() {
               </button>
             </div>
 
-            <div className={styles.messagesContainer}>
+            <div className={"messages-container"}>
               {messages.length === 0 ? (
-                <div className={styles.noMessages}>
+                <div className={"no-messages"}>
                   Начните общение! Отправьте первое сообщение.
                 </div>
               ) : (
-                <div className={styles.messagesList}>
+                <div className={"messages-list"}>
                   {messages.map((message) => {
                     const isOwnMessage = message.senderId === user?.id;
                     
                     return (
                       <div
                         key={message.id}
-                        className={`${styles.message} ${isOwnMessage ? styles.ownMessage : styles.otherMessage}`}
+                        className={`${"message"} ${isOwnMessage ? "own-message" : "other-message"}`}
                       >
-                        <div className={styles.messageContent}>
+                        <div className={"message-content"}>
                           {!isOwnMessage && (
-                            <div className={styles.senderName}>{message.senderName}</div>
+                            <div className={"sender-name"}>{message.senderName}</div>
                           )}
-                          <div className={styles.messageText}>{message.text}</div>
-                          <div className={styles.messageTime}>
+                          <div className={"message-text"}>{message.text}</div>
+                          <div className={"message-time"}>
                             {formatDate(message.sentAt)}
                             {isOwnMessage && (
-                              <span className={styles.messageStatus}>
+                              <span className={"message-status"}>
                                 {message.isRead ? <FaCheckDouble /> : <FaCheck />}
                               </span>
                             )}
@@ -371,9 +371,9 @@ export default function ChatsPage() {
               )}
             </div>
 
-            <div className={styles.messageInputContainer}>
+            <div className={"message-input-container"}>
               <textarea
-                className={styles.messageInput}
+                className={"message-input"}
                 placeholder="Введите сообщение..."
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
@@ -383,7 +383,7 @@ export default function ChatsPage() {
               />
 
               <button
-                className={`${styles.sendButton} ${!isConnected || !newMessage.trim() ? styles.disabled : ''}`}
+                className={`${"send-button"} ${!isConnected || !newMessage.trim() ? "disabled" : ''}`}
                 onClick={sendMessage}
                 disabled={!isConnected || !newMessage.trim()}
               >
@@ -392,8 +392,8 @@ export default function ChatsPage() {
             </div>
           </>
         ) : (
-          <div className={styles.noChatSelected}>
-            <div className={styles.noChatIcon}><FaComments /></div>
+          <div className={"no-chat-selected"}>
+            <div className={"no-chat-icon"}><FaComments /></div>
             <h3>Выберите чат для общения</h3>
             <p>Выберите чат из списка слева, чтобы начать переписку</p>
           </div>

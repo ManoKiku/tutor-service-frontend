@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import './globals.css';
-import { refreshToken } from '@/services/auth-data';
+import { FaSun, FaMoon } from 'react-icons/fa';
 
 export default function RootLayout({
   children,
@@ -13,9 +13,27 @@ export default function RootLayout({
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [userName, setUserName] = useState<string>('');
-  const { user, logout, isAuthenticated } = useAuth();
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const { user, logout, isAuthenticated, isLoading } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+    setTheme(initialTheme);
+    document.documentElement.setAttribute('data-theme', initialTheme);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+  };
 
   useEffect(() => {
     if (user) {
@@ -55,6 +73,10 @@ export default function RootLayout({
   const isTutorUser = user?.role === 1 || user?.role === 'Tutor';
   const isAdminUser = user?.role === 2 || user?.role === 'Admin';
 
+  if (isLoading) {
+    return null;
+  }
+
   return (
     <html lang="ru">
       <body>
@@ -77,6 +99,13 @@ export default function RootLayout({
             </div>
             
             <div className="header-right">
+              <button 
+                className="theme-toggle" 
+                onClick={toggleTheme}
+                aria-label="Сменить тему"
+              >
+                {theme === 'light' ? <FaMoon className="theme-icon"/> : <FaSun className="theme-icon"/>}
+              </button>
               {userName ? (
                 <span className="user-name-header">{userName}</span>
               ) : (
@@ -156,7 +185,6 @@ export default function RootLayout({
                       </a>
                     </li>
                     ) }
-
 
                     {isTutorUser && (
                       <>

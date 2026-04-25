@@ -4,7 +4,7 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { HubConnection, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
 import { getAuthData } from '@/lib/auth';
-import styles from './VideoCallPage.module.css';
+import './video-call.css';
 import { appConfig } from '../../../../next.config';
 import { useAuth } from '@/hooks/useAuth';
 import { FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash, FaPhoneSlash } from 'react-icons/fa';
@@ -348,37 +348,37 @@ export default function VideoCallPage() {
   };
   
   if (!mediaReady) {
-    return <div className={styles.loading}>Запрашиваем доступ к камере и микрофону...</div>;
+    return <div className={"loading"}>Запрашиваем доступ к камере и микрофону...</div>;
   }
   
   return (
-    <div className={styles.container}>
-      <div className={styles.remoteVideoWrapper}>
-        <video ref={remoteVideoRef} autoPlay playsInline className={styles.remoteVideo} />
+    <div className={"video-container"}>
+      <div className={"remote-video-wrapper"}>
+        <video ref={remoteVideoRef} autoPlay playsInline className={"remote-video"} />
         {!remoteMicrophoneEnabled && (
-          <div className={styles.micOffIcon}>
+          <div className={"mic-off-icon"}>
             <FaMicrophoneSlash />
           </div>
         )}
-        {isReconnecting && <div className={styles.reconnectingOverlay}>Попытка восстановления соединения...</div>}
+        {isReconnecting && <div className={"reconnecting-overlay"}>Попытка восстановления соединения...</div>}
       </div>
       
-      <div className={styles.localVideoWrapper}>
-        <video ref={localVideoRef} autoPlay playsInline muted className={styles.localVideo} />
+      <div className={"local-video-wrapper"}>
+        <video ref={localVideoRef} autoPlay playsInline muted className={"local-video"} />
       </div>
       
-      <div className={styles.header}>
+      <div className={"video-header"}>
         <h2>{remoteUserName}</h2>
       </div>
       
-      <div className={`${styles.controls} ${showControls ? styles.visible : styles.hidden}`}>
-        <button onClick={toggleMic} className={styles.controlBtn}>
+      <div className={`${"controls"} ${showControls ? "visible" : "hidden"}`}>
+        <button onClick={toggleMic} className={"control-btn"}>
           {isMicMuted ? <FaMicrophoneSlash /> : <FaMicrophone />}
         </button>
-        <button onClick={toggleCamera} className={styles.controlBtn}>
+        <button onClick={toggleCamera} className={"control-btn"}>
           {isCameraOff ? <FaVideoSlash /> : <FaVideo />}
         </button>
-        <button onClick={() => endCall()} className={`${styles.controlBtn} ${styles.endCallBtn}`}>
+        <button onClick={() => endCall()} className={`${"control-btn"} ${"end-call-btn"}`}>
           <FaPhoneSlash />
         </button>
       </div>

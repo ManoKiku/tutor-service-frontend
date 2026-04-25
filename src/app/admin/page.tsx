@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import styles from './admin.module.css';
+import './admin.css';
 import { getCategories, createCategory, deleteCategory } from '@/services/categories';
 import { getSubcategories, createSubcategories, deleteSubcategories } from '@/services/subcategories';
 import { getSubjects, createSubject, deleteSubject } from '@/services/subjects';
@@ -236,13 +236,13 @@ export default function AdminPage() {
 
             <div className="card">
               <h3>Список категорий</h3>
-              <ul className={styles.entityList}>
+              <ul className="admin-entity-list">
                 {categories.map(cat => (
-                  <li key={cat.id} className={styles.entityItem}>
+                  <li key={cat.id} className="admin-entity-item">
                     <div>
                       <strong>{cat.name}</strong>
                       <em>Id: {cat.id}</em>
-                    </div>  
+                    </div>
                     <button
                       onClick={() => handleDeleteCategory(cat.id)}
                       className="btn btn-danger btn-small"
@@ -289,13 +289,13 @@ export default function AdminPage() {
 
             <div className="card">
               <h3>Список подкатегорий</h3>
-              <ul className={styles.entityList}>
+              <ul className="admin-entity-list">
                 {subcategories.map(sub => (
-                  <li key={sub.id} className={styles.entityItem}>
+                  <li key={sub.id} className="admin-entity-item">
                     <div>
                       <strong>{sub.name}</strong>
                       <em>Id: {sub.id}</em>
-                      <div className={styles.subInfo}>
+                      <div className="admin-sub-info">
                         Категория: {categories.find(c => c.id === sub.categoryId)?.name}, Id: {sub.categoryId}
                       </div>
                     </div>
@@ -345,13 +345,13 @@ export default function AdminPage() {
 
             <div className="card">
               <h3>Список предметов</h3>
-              <ul className={styles.entityList}>
+              <ul className="admin-entity-list">
                 {subjects.map(subject => (
-                  <li key={subject.id} className={styles.entityItem}>
+                  <li key={subject.id} className="admin-entity-item">
                     <div>
                       <strong>{subject.name}</strong>
                       <em>Id: {subject.id}</em>
-                      <div className={styles.subInfo}>
+                      <div className="admin-sub-info">
                         Подкатегория: {subcategories.find(sc => sc.id === subject.subcategoryId)?.name}, Id: {subject.subcategoryId}
                       </div>
                     </div>
@@ -389,9 +389,9 @@ export default function AdminPage() {
 
             <div className="card">
               <h3>Список тегов</h3>
-              <ul className={styles.entityList}>
+              <ul className="admin-entity-list">
                 {tags.map(tag => (
-                  <li key={tag.id} className={styles.entityItem}>
+                  <li key={tag.id} className="admin-entity-item">
                     <span>{tag.name}</span>
                     <button
                       onClick={() => handleDeleteTag(tag.id)}
@@ -410,12 +410,12 @@ export default function AdminPage() {
         return (
           <div className="card">
             <h3>Пользователи</h3>
-            <ul className={styles.entityList}>
+            <ul className="admin-entity-list">
               {users.map(user => (
-                <li key={user.id} className={styles.entityItem}>
+                <li key={user.id} className="admin-entity-item">
                   <div>
                     <strong>{user.firstName} {user.lastName}</strong>
-                    <div className={styles.subInfo}>
+                    <div className="admin-sub-info">
                       {user.email} • {user.role === 0 ? 'Студент' : user.role === 1 ? 'Репетитор' : 'Админ'}
                     </div>
                   </div>
@@ -435,21 +435,21 @@ export default function AdminPage() {
         return (
           <div className="card">
             <h3>Объявления на модерации</h3>
-            <ul className={styles.entityList}>
+            <ul className="admin-entity-list">
               {tutorPosts.map(post => (
-                <li key={post.id} className={styles.entityItem}>
-                  <div className={styles.postContent}>
+                <li key={post.id} className="admin-entity-item">
+                  <div className="admin-admin-post-content">
                     <strong>{post.subjectName}</strong>
-                    <div className={styles.subInfo}>
+                    <div className="admin-sub-info">
                       Репетитор: {post.tutorName}
                     </div>
                     <p className="text-truncate-2">{post.description}</p>
-                    <div className={styles.postMeta}>
+                    <div className="admin-post-meta">
                       Ставка: ${post.hourlyRate}/час • 
                       Статус: {post.status === 0 ? 'На модерации' : post.status === 1 ? 'Одобрено' : 'Отклонено'}
                     </div>
                   </div>
-                  <div className={styles.postActions}>
+                  <div className="admin-post-actions">
                     {post.status === 0 && (
                       <>
                         <button
@@ -479,45 +479,45 @@ export default function AdminPage() {
           </div>
         );
     }
-  };
+  }
 
   return (
-    <div className={styles.adminContainer}>
-      <div className={styles.sidebar}>
-        <h2 className={styles.sidebarTitle}>Типы</h2>
-        <nav className={styles.sidebarNav}>
+    <div className="admin-container">
+      <div className="admin-sidebar">
+        <h2 className="admin-sidebar-title">Типы</h2>
+        <nav className="admin-sidebar-nav">
           <button
-            className={`${styles.sidebarButton} ${selectedEntity === 'categories' ? styles.active : ''}`}
+            className={`admin-sidebar-button ${selectedEntity === 'categories' ? 'active' : ''}`}
             onClick={() => setSelectedEntity('categories')}
           >
             Категории
           </button>
           <button
-            className={`${styles.sidebarButton} ${selectedEntity === 'subcategories' ? styles.active : ''}`}
+            className={`admin-sidebar-button ${selectedEntity === 'subcategories' ? 'active' : ''}`}
             onClick={() => setSelectedEntity('subcategories')}
           >
             Подкатегории
           </button>
           <button
-            className={`${styles.sidebarButton} ${selectedEntity === 'subjects' ? styles.active : ''}`}
+            className={`admin-sidebar-button ${selectedEntity === 'subjects' ? 'active' : ''}`}
             onClick={() => setSelectedEntity('subjects')}
           >
             Предметы
           </button>
           <button
-            className={`${styles.sidebarButton} ${selectedEntity === 'tags' ? styles.active : ''}`}
+            className={`admin-sidebar-button ${selectedEntity === 'tags' ? 'active' : ''}`}
             onClick={() => setSelectedEntity('tags')}
           >
             Теги
           </button>
           <button
-            className={`${styles.sidebarButton} ${selectedEntity === 'users' ? styles.active : ''}`}
+            className={`admin-sidebar-button ${selectedEntity === 'users' ? 'active' : ''}`}
             onClick={() => setSelectedEntity('users')}
           >
             Пользователи
           </button>
           <button
-            className={`${styles.sidebarButton} ${selectedEntity === 'moderation' ? styles.active : ''}`}
+            className={`admin-sidebar-button ${selectedEntity === 'moderation' ? 'active' : ''}`}
             onClick={() => setSelectedEntity('moderation')}
           >
             Модерация
@@ -525,8 +525,8 @@ export default function AdminPage() {
         </nav>
       </div>
 
-      <div className={styles.mainContent}>
-        <h1 className={styles.pageTitle}>
+      <div className="admin-main-content">
+        <h1 className="admin-page-title">
           {selectedEntity === 'categories' && 'Управление категориями'}
           {selectedEntity === 'subcategories' && 'Управление подкатегориями'}
           {selectedEntity === 'subjects' && 'Управление предметами'}
@@ -534,7 +534,7 @@ export default function AdminPage() {
           {selectedEntity === 'users' && 'Управление пользователями'}
           {selectedEntity === 'moderation' && 'Модерация объявлений'}
         </h1>
-        
+
         {renderContent()}
       </div>
     </div>

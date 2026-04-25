@@ -1,10 +1,10 @@
-.adminContainer {
+.admin-container {
   display: flex;
   min-height: 100vh;
   background-color: var(--bg-page);
 }
 
-.sidebar {
+.admin-sidebar {
   width: 280px;
   background: var(--surface);
   padding: var(--space-8) 0;
@@ -14,7 +14,7 @@
   border-right: 1px solid var(--border-light);
 }
 
-.sidebarTitle {
+.admin-sidebar-title {
   padding: 0 var(--space-6) var(--space-6);
   color: var(--text-primary);
   border-bottom: 1px solid var(--border-light);
@@ -24,14 +24,14 @@
   letter-spacing: -0.01em;
 }
 
-.sidebarNav {
+.admin-sidebar-nav {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
   padding: 0 var(--space-4);
 }
 
-.sidebarButton {
+.admin-sidebar-button {
   padding: var(--space-3) var(--space-5);
   background: none;
   border: none;
@@ -44,25 +44,25 @@
   transition: var(--transition-base);
 }
 
-.sidebarButton:hover {
+.admin-sidebar-button:hover {
   background-color: var(--primary-light);
   color: var(--primary);
 }
 
-.sidebarButton.active {
+.admin-sidebar-button.active {
   background-color: var(--primary-light);
   color: var(--primary-dark);
   font-weight: 600;
   border-radius: var(--radius-lg);
 }
 
-.mainContent {
+.admin-main-content {
   flex: 1;
   padding: var(--space-8);
   overflow-y: auto;
 }
 
-.pageTitle {
+.admin-page-title {
   color: var(--text-primary);
   margin-bottom: var(--space-8);
   font-size: 2rem;
@@ -70,14 +70,14 @@
   letter-spacing: -0.02em;
 }
 
-.entityList {
+.admin-entity-list {
   list-style: none;
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
 }
 
-.entityItem {
+.admin-entity-item {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -89,44 +89,44 @@
   transition: var(--transition-base);
 }
 
-.entityItem em {
+.admin-entity-item em {
   margin-left: 10px;
 }
 
-.entityItem:hover {
+.admin-entity-item:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
   border-color: var(--primary-light);
 }
 
-.subInfo {
+.admin-sub-info {
   font-size: 0.9rem;
   color: var(--text-muted);
   margin-top: var(--space-2);
 }
 
-.postContent {
+.admin-post-content {
   flex: 1;
 }
 
-.postMeta {
+.admin-post-meta {
   margin-top: var(--space-3);
   font-size: 0.9rem;
   color: var(--text-muted);
 }
 
-.postActions {
+.admin-post-actions {
   display: flex;
   gap: var(--space-3);
   margin-left: var(--space-5);
 }
 
 @media (max-width: 768px) {
-  .adminContainer {
+  .admin-container {
     flex-direction: column;
   }
 
-  .sidebar {
+  .admin-sidebar {
     width: 100%;
     padding: var(--space-5) 0;
     box-shadow: var(--shadow-sm);
@@ -134,36 +134,36 @@
     border-bottom: 1px solid var(--border-light);
   }
 
-  .sidebarNav {
+  .admin-sidebar-nav {
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
     gap: var(--space-2);
   }
 
-  .sidebarButton {
+  .admin-sidebar-button {
     padding: var(--space-2) var(--space-4);
     text-align: center;
     border-radius: 40px;
   }
 
-  .sidebarButton.active {
+  .admin-sidebar-button.active {
     border-left: none;
     background-color: var(--primary);
     color: white;
     border-radius: 40px;
   }
 
-  .mainContent {
+  .admin-main-content {
     padding: var(--space-5);
   }
 
-  .entityItem {
+  .admin-entity-item {
     flex-direction: column;
     gap: var(--space-5);
   }
 
-  .postActions {
+  .admin-post-actions {
     margin-left: 0;
     width: 100%;
     justify-content: flex-end;

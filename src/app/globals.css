@@ -10,6 +10,7 @@
   --surface: #ffffff;
   --border-light: #e2e8f0;
   --border-medium: #cbd5e1;
+  --surface-rgb: 255, 255, 255;
   
   --text-primary: #0f172a;
   --text-secondary: #475569;
@@ -50,10 +51,36 @@
   --font-mono: 'SF Mono', 'Menlo', 'Monaco', 'Cascadia Code', 'Consolas', monospace;
 }
 
+[data-theme="dark"] {
+  --primary: #5f7ef2;
+  --primary-dark: #4a69d9;
+  --primary-light: #2d3748;
+  --secondary: #94a3b8;
+  --secondary-dark: #6c7a91;
+  --accent: #ff8c42;
+  
+  --bg-page: #0f172a;
+  --surface: #1e293b;
+  --surface-rgb: 30, 41, 59;
+  --border-light: #334155;
+  --border-medium: #475569;
+  
+  --text-primary: #e2e8f0;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-on-primary: #f8fafc;
+  
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  border-color: var(--border-light);
 }
 
 a {
@@ -67,6 +94,26 @@ body {
   background-color: var(--bg-page);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.theme-toggle {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  transition: background-color 0.2s;
+  line-height: 1;
+  margin-right: 0.75rem;
+}
+
+.theme-toggle:hover {
+  background-color: var(--border-light);
+}
+
+.theme-icon {
+  color: var(--text-primary);
 }
 
 .container {
@@ -90,7 +137,7 @@ body {
   z-index: 1000;
   height: 70px;
   backdrop-filter: blur(8px);
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(var(--surface-rgb));
   border-bottom: 1px solid var(--border-light);
 }
 
@@ -480,7 +527,6 @@ body {
   transform: none;
 }
 
-/* Cards */
 .card {
   background: var(--surface);
   border-radius: 24px;
@@ -524,7 +570,7 @@ body {
   border-radius: 16px;
   font-size: 1rem;
   transition: var(--transition-base);
-  background-color: var(--surface);
+  background-color: var(--primary-light);
   color: var(--text-primary);
 }
 
@@ -541,12 +587,10 @@ body {
 
 .form-input:invalid:not(:focus):not(:placeholder-shown) {
   border-color: var(--danger);
-  background-color: #fff5f5;
 }
 
 .form-input:valid:not(:focus):not(:placeholder-shown) {
   border-color: var(--success);
-  background-color: #f0fdf4;
 }
 
 .form-hint {
@@ -792,6 +836,10 @@ body {
     }
 
   .sidebar-overlay {
+    display: none;
+  }
+
+  .user-name-header {
     display: none;
   }
 }
