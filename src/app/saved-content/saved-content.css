@@ -4,7 +4,7 @@
   padding: var(--space-6) var(--space-5);
 }
 
-.main-content {
+.main-saved-content {
   background: var(--surface);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-base);
@@ -13,7 +13,7 @@
   border: 1px solid var(--border-light);
 }
 
-.main-content h1 {
+.main-saved-content h1 {
   font-size: 2rem;
   font-weight: 700;
   color: var(--text-primary);
@@ -156,9 +156,8 @@
     padding: var(--space-4);
   }
 
-  .main-content {
+  .main-saved-content {
     padding: var(--space-5);
-    margin-top: var(--space-4);
   }
 
   .saved-content-item {

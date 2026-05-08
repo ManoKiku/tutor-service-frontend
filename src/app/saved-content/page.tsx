@@ -122,7 +122,7 @@ export default function SavedContentPage() {
 
   return (
     <div className="saved-content-container">
-      <div className="main-content">
+      <div className="main-saved-content">
         <h1>Мои сохранённые файлы</h1>
         <p className="subtitle">
           Здесь хранятся файлы, которые вы можете быстро добавлять к любым урокам.
