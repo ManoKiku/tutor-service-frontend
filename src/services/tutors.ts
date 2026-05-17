@@ -75,3 +75,36 @@ export async function updateTutorProfile(
 
   return response as Tutor;
 }
+
+export async function getTutorsCities(tutorId: string): Promise<City[]> {
+    try {
+        const response = await fetch(appConfig.apiUrl + `/${ENDPOINT}/` + tutorId + '/cities');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json() as City[];
+        return data;
+    } catch (error) {
+        console.error("Fetch failed:", error);
+        return [];
+    }
+}
+
+export async function addCityToTutor(cityId: string): Promise<City> {
+
+  const method = 'POST';
+
+  const response = await fetchWithAuth(`/${ENDPOINT}/cities`, {
+    method,
+    body: JSON.stringify({cityId: cityId}),
+  });
+
+  return response as City;
+}
+
+export async function removeCityFromTutor(cityId: number): Promise<void> {
+  await fetchWithAuth(`/${ENDPOINT}/cities/${cityId}`, {
+    method: 'DELETE',
+  });
+}

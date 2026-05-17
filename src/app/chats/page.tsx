@@ -6,7 +6,7 @@ import { isAuthenticated, getCurrentUser, getAuthData } from '@/lib/auth';
 import { getChatMessages, getChats } from '@/services/chats';
 import './chats.css';
 import { appConfig } from '../../../next.config';
-import { FaCheck, FaCheckDouble, FaComments } from 'react-icons/fa';
+import { FaCheck, FaCheckDouble, FaComments, FaPhone } from 'react-icons/fa';
 import { addRelation, checkRelation } from '@/services/relation';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
@@ -262,6 +262,7 @@ export default function ChatsPage() {
             <div className={"no-chats"}>У вас пока нет чатов</div>
           ) : (
             chats.map(chat => {
+              const avatarUrl = chat.tutorId == tutorId ? chat.studentAvatarUrl : chat.tutorAvatarUrl;
               const displayName = chat.tutorId === tutorId ? chat.studentName : chat.tutorName;
               const lastMessageText = chat.lastMessage?.text || 'Нет сообщений';
               const initials = displayName.charAt(0).toUpperCase();
@@ -273,7 +274,7 @@ export default function ChatsPage() {
                   onClick={() => setSelectedChat(chat)}
                 >
                   <div className={"chat-avatar"}>
-                    {initials}
+                    {avatarUrl == null ? initials : <img className="user-avatar-image" src={appConfig.serverUrl + avatarUrl}/>}
                   </div>
                   <div className={"chat-info"}>
                     <div className={"chat-name"}>{displayName}</div>
@@ -308,8 +309,9 @@ export default function ChatsPage() {
             <div className={"chat-header"}>
               <div className={"chat-header-avatar"}>
                 {selectedChat.tutorId === tutorId 
-                  ? selectedChat.studentName.charAt(0).toUpperCase()
-                  : selectedChat.tutorName.charAt(0).toUpperCase()}
+                  ? (selectedChat.studentAvatarUrl != null ? <img src={appConfig.serverUrl + selectedChat.studentAvatarUrl} className="user-avatar-image"/>: selectedChat.studentName.charAt(0).toUpperCase())
+                  : (selectedChat.tutorAvatarUrl != null ? <img src={appConfig.serverUrl + selectedChat.tutorAvatarUrl} className="user-avatar-image"/>: selectedChat.tutorName.charAt(0).toUpperCase())
+                  }
               </div>
               <div className={"chatH-header-info"}>
                 <h3>
@@ -330,7 +332,7 @@ export default function ChatsPage() {
                   className="btn btn-primary"
                   onClick={startVideoCall}
                 >
-                  Начать звонок
+                  <FaPhone/>
               </button>
             </div>
 

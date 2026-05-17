@@ -12,10 +12,10 @@ const nextConfig: NextConfig = {
 };
 
 export const appConfig : AppConfig = {
-  apiUrl: "https://repetitor.somee.com/api",
-  chatHubUrl: "https://repetitor.somee.com/chatHub",
-  serverUrl: "https://repetitor.somee.com",
-  videoCallUrl: "https://repetitor.somee.com/videoCallHub"
+  apiUrl: "http://localhost:5154/api",
+  chatHubUrl: "http://localhost:5154/chatHub",
+  serverUrl: "http://localhost:5154",
+  videoCallUrl: "http://localhost:5154/videoCallHub"
 }
 
 export default nextConfig;

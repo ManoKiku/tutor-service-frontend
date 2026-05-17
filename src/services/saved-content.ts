@@ -7,13 +7,12 @@ const ENDPOINT = 'saved-content';
 export async function uploadSavedContent(data: AddSavedContentRequest): Promise<SavedContentDto> {
   const formData = new FormData();
   formData.append('file', data.file);
+  if (data.folderId) formData.append('FolderId', data.folderId);
 
-  const response = await fetchWithAuth(`/${ENDPOINT}`, {
+  return fetchWithAuth('/saved-content', {
     method: 'POST',
     body: formData,
-  }, false);
-  
-  return response as SavedContentDto;
+  }, false) as Promise<SavedContentDto>;
 }
 
 export async function getSavedContent(): Promise<SavedContentDto[]> {
@@ -55,4 +54,21 @@ export async function getSavedContentDownloadUrl(savedContent: SavedContentDto):
       console.error('Download error:', error);
       return undefined;
     }
+}
+
+export async function createFolder(name: string): Promise<SavedContentFolderDto> {
+  return fetchWithAuth('/saved-content/folders', {
+    method: 'POST',
+    body: JSON.stringify({ name }),
+  }) as Promise<SavedContentFolderDto>;
+}
+
+export async function getFolders(): Promise<SavedContentFolderDto[]> {
+  return fetchWithAuth('/saved-content/folders') as Promise<SavedContentFolderDto[]>;
+}
+
+export async function deleteFolder(folderId: string): Promise<void> {
+  await fetchWithAuth(`/saved-content/folders/${folderId}`, {
+    method: 'DELETE',
+  });
 }

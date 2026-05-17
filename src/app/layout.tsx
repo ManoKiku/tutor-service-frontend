@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import './globals.css';
 import { FaSun, FaMoon } from 'react-icons/fa';
+import { appConfig } from '../../next.config';
 
 export default function RootLayout({
   children,
@@ -119,9 +120,16 @@ export default function RootLayout({
               <div className="sidebar-logo">Repetitor.by</div>
               {userName && (
                 <div className="sidebar-user">
-                  <div className="user-avatar">
-                    {userName.charAt(0).toUpperCase()}
-                  </div>
+                  <a href="/profile">
+                    <div className="user-avatar">
+                      {
+                      user?.avatarUrl == null 
+                      ? userName.charAt(0).toUpperCase() :
+                      <img src={appConfig.serverUrl + user.avatarUrl} className="user-avatar-image"/>
+                      }
+                    </div>
+                  </a>
+
                   <div className="user-info">
                     <div className="user-name">{userName}</div>
                     <div className="user-email">{user?.email}</div>

@@ -9,9 +9,10 @@ interface TutorPost
     hourlyRate : number;
     status : number;    
     adminComment: string | null;
-    tags: string[]
-
-}
+    tags: Tag[]; 
+    averageRating?: number;
+    totalReviews?: number;
+} 
 
 interface TutorPostRequest {
     subjectId : string | undefined;

@@ -20,7 +20,6 @@
   to { transform: rotate(360deg); }
 }
 
-/* Profile Header Card */
 .tutor-profile-header {
   margin-bottom: var(--space-8);
   padding: var(--space-8);
@@ -466,4 +465,205 @@
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+/* Рейтинг */
+.profile-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+/* Города */
+.profile-cities {
+  margin: var(--space-6) 0;
+}
+
+.cities-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.city-tag {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  padding: 6px 12px;
+  border-radius: 40px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.city-remove {
+  background: none;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+  line-height: 1;
+}
+
+.city-selector {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Табы */
+.profile-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: var(--space-6);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.tab-btn {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition-base);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.tab-btn.active {
+  color: var(--primary);
+  border-bottom: 2px solid var(--primary);
+}
+
+/* Отзывы */
+.reviews-section {
+  padding: var(--space-6);
+}
+
+.reviews-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-6);
+}
+
+.review-form {
+  margin-bottom: var(--space-6);
+  background: var(--bg-page);
+}
+
+.rating-input {
+  display: flex;
+  gap: 8px;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  color: #cbd5e1;
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.review-item {
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: var(--space-5);
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.review-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.review-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: var(--primary);
+}
+
+.review-rating {
+  display: inline-flex;
+}
+
+.review-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.review-text {
+  color: var(--text-secondary);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.no-reviews {
+  text-align: center;
+  padding: var(--space-8);
+  color: var(--text-muted);
+}
+
+.tags-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tag-select-btn {
+  background: var(--bg-page);
+  border: 1px solid var(--border-medium);
+  padding: 6px 14px;
+  border-radius: 40px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.tag-select-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.add-tag-group {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.star-filled {
+  color: #fbbf24; 
+}
+.star-empty {
+  color: #cbd5e1; 
 }

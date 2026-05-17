@@ -15,6 +15,22 @@ export interface User {
   phone: string;
   role: UserRole;
   isEmailVerified: boolean;
+  avatarUrl: string | null;
+}
+
+export  interface UpdateUserRequest {
+  firstName: string;
+  lastName: string;
+  phone: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface AvatarUploadRequest {
+  avatar: File;
 }
 
 export interface LoginRequest {

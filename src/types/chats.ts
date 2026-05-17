@@ -2,8 +2,10 @@ interface Chat {
     id: string;
     tutorId: string;
     tutorName: string;
+    tutorAvatarUrl: string;
     studentId: string;
     studentName: string;
+    studentAvatarUrl: string;
     createdAt: Date;
     updatedAt: Date;
     lastMessage: Message;

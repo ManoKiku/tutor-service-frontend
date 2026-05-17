@@ -360,3 +360,44 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+.rating-block {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+
+.rating-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.star {
+  font-size: 1rem;
+}
+
+.star-filled {
+  color: #fbbf24;
+}
+
+.star-half {
+  color: #fbbf24;
+}
+
+.star-empty {
+  color: #cbd5e1;
+}
+
+.rating-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.reviews-count {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}

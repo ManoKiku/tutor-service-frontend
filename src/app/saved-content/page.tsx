@@ -4,28 +4,47 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import './saved-content.css';
-import { deleteSavedContent, getSavedContent, getSavedContentDownloadUrl, uploadSavedContent } from '@/services/saved-content';
+import { 
+  deleteSavedContent, 
+  getSavedContent, 
+  getSavedContentDownloadUrl, 
+  uploadSavedContent,
+  getFolders,
+  createFolder,
+  deleteFolder
+} from '@/services/saved-content';
+import { FaFolder, FaFolderOpen, FaPlus, FaTrash } from 'react-icons/fa';
 
 export default function SavedContentPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [savedContents, setSavedContents] = useState<SavedContentDto[]>([]);
+  const [folders, setFolders] = useState<SavedContentFolderDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFolderId, setSelectedFolderId] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
+  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
+  const [isDeletingFolder, setIsDeletingFolder] = useState<string | null>(null);
 
   const isTutor = user?.role === 1 || user?.role === 'Tutor';
 
-  const loadSavedContents = useCallback(async () => {
+  const loadData = useCallback(async () => {
     if (!isTutor) return;
     try {
       setIsLoading(true);
-      const data = await getSavedContent();
-      setSavedContents(data || []);
+      const [files, foldersData] = await Promise.all([
+        getSavedContent(),
+        getFolders()
+      ]);
+      setSavedContents(files || []);
+      setFolders(foldersData || []);
     } catch (error) {
-      console.error('Error loading saved contents:', error);
+      console.error('Error loading data:', error);
     } finally {
       setIsLoading(false);
     }
@@ -37,9 +56,16 @@ export default function SavedContentPage() {
         router.push('/');
         return;
       }
-      loadSavedContents();
+      loadData();
     }
-  }, [isAuthenticated, authLoading, isTutor, router, loadSavedContents]);
+  }, [isAuthenticated, authLoading, isTutor, router, loadData]);
+
+  const filteredContents = savedContents.filter(item => {
+    if (activeFolderId === null) {
+      return !item.folderId; 
+    }
+    return item.folderId === activeFolderId;
+  });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -54,11 +80,13 @@ export default function SavedContentPage() {
     setIsUploading(true);
     setUploadError(null);
     try {
-      await uploadSavedContent({ file: selectedFile });
+      const folderId = selectedFolderId === '' ? undefined : selectedFolderId;
+      await uploadSavedContent({ file: selectedFile, folderId });
       setSelectedFile(null);
+      setSelectedFolderId('');
       const fileInput = document.getElementById('file-upload') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
-      await loadSavedContents();
+      await loadData();
     } catch (error: any) {
       console.error('Upload error:', error);
       setUploadError(error.message || 'Ошибка при загрузке файла');
@@ -74,7 +102,7 @@ export default function SavedContentPage() {
     setDeletingId(id);
     try {
       await deleteSavedContent(id);
-      setSavedContents(prev => prev.filter(item => item.id !== id));
+      await loadData();
     } catch (error) {
       console.error('Delete error:', error);
       alert('Не удалось удалить файл');
@@ -101,6 +129,41 @@ export default function SavedContentPage() {
     }
   };
 
+  const handleCreateFolder = async () => {
+    if (!newFolderName.trim()) {
+      alert('Введите название папки');
+      return;
+    }
+    try {
+      await createFolder(newFolderName);
+      setNewFolderName('');
+      setIsCreatingFolder(false);
+      await loadData();
+    } catch (error) {
+      console.error('Create folder error:', error);
+      alert('Ошибка при создании папки');
+    }
+  };
+
+  const handleDeleteFolder = async (folderId: string, folderName: string) => {
+    if (!confirm(`Удалить папку "${folderName}"? Все файлы внутри папки также будут удалены.`)) {
+      return;
+    }
+    setIsDeletingFolder(folderId);
+    try {
+      await deleteFolder(folderId);
+      if (activeFolderId === folderId) {
+        setActiveFolderId(null); 
+      }
+      await loadData();
+    } catch (error) {
+      console.error('Delete folder error:', error);
+      alert('Ошибка при удалении папки');
+    } finally {
+      setIsDeletingFolder(null);
+    }
+  };
+
   if (authLoading || isLoading) {
     return (
       <div className="saved-content-container">
@@ -119,6 +182,10 @@ export default function SavedContentPage() {
       </div>
     );
   }
+
+  const getFolderFileCount = (folderId: string) => {
+    return savedContents.filter(f => f.folderId === folderId).length;
+  };
 
   return (
     <div className="saved-content-container">
@@ -140,6 +207,18 @@ export default function SavedContentPage() {
                 className="form-input"
               />
             </div>
+            <div className="form-group">
+              <select
+                value={selectedFolderId}
+                onChange={(e) => setSelectedFolderId(e.target.value)}
+                className="form-input"
+              >
+                <option value="">Без папки (общий доступ)</option>
+                {folders.map(folder => (
+                  <option key={folder.id} value={folder.id}>{folder.name}</option>
+                ))}
+              </select>
+            </div>
             {uploadError && <div className="error-message">{uploadError}</div>}
             <button
               type="submit"
@@ -151,20 +230,79 @@ export default function SavedContentPage() {
           </form>
         </div>
 
+        <div className="folder-management">
+          <div className="folder-header">
+            <h3>Папки</h3>
+            {!isCreatingFolder ? (
+              <button
+                className="btn btn-secondary btn-small"
+                onClick={() => setIsCreatingFolder(true)}
+              >
+                <FaPlus /> Создать папку
+              </button>
+            ) : (
+              <div className="create-folder-form">
+                <input
+                  type="text"
+                  placeholder="Название папки"
+                  value={newFolderName}
+                  onChange={(e) => setNewFolderName(e.target.value)}
+                  className="form-input"
+                  autoFocus
+                />
+                <button className="btn btn-primary btn-small" onClick={handleCreateFolder}>
+                  Создать
+                </button>
+                <button className="btn btn-secondary btn-small" onClick={() => setIsCreatingFolder(false)}>
+                  Отмена
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="folder-tabs">
+            <button
+              className={`tab-btn ${activeFolderId === null ? 'active' : ''}`}
+              onClick={() => setActiveFolderId(null)}
+            >
+              <FaFolderOpen /> Все файлы ({savedContents.filter(f => !f.folderId).length})
+            </button>
+            {folders.map(folder => (
+              <div key={folder.id} className="folder-tab-wrapper">
+                <button
+                  className={`tab-btn ${activeFolderId === folder.id ? 'active' : ''}`}
+                  onClick={() => setActiveFolderId(folder.id)}
+                >
+                  <FaFolder /> {folder.name} ({getFolderFileCount(folder.id)})
+                </button>
+                <button
+                  className="folder-delete-btn"
+                  onClick={() => handleDeleteFolder(folder.id, folder.name)}
+                  disabled={isDeletingFolder === folder.id}
+                  title="Удалить папку"
+                >
+                  <FaTrash />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="saved-contents-list">
-          {savedContents.length === 0 ? (
+          {filteredContents.length === 0 ? (
             <div className="empty-message">
-              <p>У вас пока нет сохранённых файлов.</p>
-              <p>Загрузите первый файл, чтобы он появился здесь.</p>
+              <p>В этой папке пока нет файлов.</p>
+              <p>Загрузите файл, выбрав нужную папку в форме выше.</p>
             </div>
           ) : (
-            savedContents.map(content => (
+            filteredContents.map(content => (
               <div key={content.id} className="saved-content-item">
                 <div className="saved-content-info">
                   <div className="saved-content-name">{content.fileName}</div>
                   <div className="saved-content-details">
                     <span>{(content.fileSize / 1024).toFixed(2)} KB</span>
                     <span>{new Date(content.createdAt).toLocaleDateString()}</span>
+                    {content.folderName && <span><FaFolder/> {content.folderName}</span>}
                   </div>
                 </div>
                 <div className="saved-content-actions">

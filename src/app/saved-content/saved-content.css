@@ -185,3 +185,124 @@
     width: 100%;
   }
 }
+
+/* Управление папками */
+.folder-management {
+  margin-bottom: var(--space-8);
+  background: var(--bg-page);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  border: 1px solid var(--border-light);
+}
+
+.folder-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.folder-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--text-primary);
+}
+
+.create-folder-form {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.create-folder-form .form-input {
+  width: 200px;
+  padding: 8px 12px;
+}
+
+.folder-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.folder-tab-wrapper {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: 40px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.tab-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.tab-btn:hover:not(.active) {
+  background: var(--primary-light);
+  border-color: var(--primary);
+}
+
+.folder-delete-btn {
+  background: none;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  padding: 4px 6px;
+  margin-left: 2px;
+  font-size: 0.8rem;
+  border-radius: 40px;
+  transition: var(--transition-base);
+}
+
+.folder-delete-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.1);
+  transform: scale(1.05);
+}
+
+.folder-delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .folder-tabs {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .folder-tab-wrapper {
+    width: 100%;
+  }
+  
+  .tab-btn {
+    flex: 1;
+    justify-content: center;
+  }
+  
+  .create-folder-form {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  .create-folder-form .form-input {
+    width: 100%;
+  }
+}

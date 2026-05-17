@@ -49,3 +49,10 @@ interface CreateLessonRequest
     endTime: Date;
     title: string;
 }
+
+ interface LessonUpdateRequest {
+  startTime: Date;
+  endTime: Date;
+  title: string;
+  status: number;
+}

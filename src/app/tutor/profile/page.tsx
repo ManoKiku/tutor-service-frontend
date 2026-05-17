@@ -9,8 +9,13 @@ import '../tutor-profile.css';
 import { getCategories } from '@/services/categories';
 import { getSubcategories } from '@/services/subcategories';
 import { getSubjects } from '@/services/subjects';
-import { updateTutorProfile } from '@/services/tutors';
+import { addCityToTutor, getTutorsCities, removeCityFromTutor, updateTutorProfile } from '@/services/tutors';
 import { saveTutorProfile } from '@/lib/auth';
+import { appConfig } from '../../../../next.config';
+import { getCities } from '@/services/cities';
+import { FaCity, FaStar, FaRegStar, FaStarHalfAlt } from 'react-icons/fa';
+import { createTag, getTags } from '@/services/tags';
+import { getReviewsByTutor } from '@/services/reviews';
 
 export default function TutorProfilePage() {
   const router = useRouter();
@@ -21,7 +26,7 @@ export default function TutorProfilePage() {
   const [isOwner, setIsOwner] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-    const [editData, setEditData] = useState<UpdateTutorRequest>({
+  const [editData, setEditData] = useState<UpdateTutorRequest>({
     bio: '',
     education: '',
     experienceYears: 0,
@@ -39,6 +44,104 @@ export default function TutorProfilePage() {
   const [selectedSubcategory, setSelectedSubcategory] = useState('');
   const [updatingProfile, setUpdatingProfile] = useState(false);
 
+  const [cities, setCities] = useState<City[]>([]);
+  const [availableCities, setAvailableCities] = useState<City[]>([]);
+  const [showCitySelector, setShowCitySelector] = useState(false);
+  const [selectedCityId, setSelectedCityId] = useState('');
+
+  const [allTags, setAllTags] = useState<Tag[]>([]);
+  
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalReviews, setTotalReviews] = useState(0);
+
+  const [reviews, setReviews] = useState<ReviewDto[]>([]);
+  const [activeTab, setActiveTab] = useState<'posts' | 'reviews'>('posts');
+
+  const loadTags = async () => {
+    try {
+      const tags = await getTags();
+      setAllTags(tags);
+    } catch (error) {
+      console.error('Error loading tags:', error);
+    }
+  };
+
+  const toggleTag = (tagId: number) => {
+    if (newPost.tagsIds.includes(tagId)) {
+      setNewPost({ ...newPost, tagsIds: newPost.tagsIds.filter(id => id !== tagId) });
+    } else {
+      setNewPost({ ...newPost, tagsIds: [...newPost.tagsIds, tagId] });
+    }
+  };
+
+  const loadCities = async () => {
+    if (!tutor) return;
+    try {
+      const citiesData = await getTutorsCities(tutor.id);
+      setCities(citiesData);
+    } catch (error) {
+      console.error('Error loading cities:', error);
+    }
+  };
+
+  const loadAllCities = async () => {
+    try {
+      const allCities = await getCities();
+      setAvailableCities(allCities);
+    } catch (error) {
+      console.error('Error loading all cities:', error);
+    }
+  };
+
+  const loadReviews = async (tutorId: string) => {
+    try {
+      const result = await getReviewsByTutor(tutorId);
+      setReviews(result.reviews);
+      setTotalReviews(result.total);
+      const avg = result.reviews.reduce((sum, r) => sum + r.rating, 0) / (result.reviews.length || 1);
+      setAverageRating(avg);
+    } catch (error) {
+      console.error('Error loading reviews:', error);
+    }
+  };
+
+  const handleAddCity = async () => {
+    if (!selectedCityId || !tutor) return;
+    try {
+      await addCityToTutor(selectedCityId);
+      await loadCities();
+      setSelectedCityId('');
+      setShowCitySelector(false);
+    } catch (error) {
+      console.error('Error adding city:', error);
+      alert('Ошибка при добавлении города');
+    }
+  };
+
+  const handleRemoveCity = async (cityId: number) => {
+    if (!confirm('Удалить город из профиля?')) return;
+    try {
+      await removeCityFromTutor(cityId);
+      await loadCities();
+    } catch (error) {
+      console.error('Error removing city:', error);
+      alert('Ошибка при удалении города');
+    }
+  };
+
+  const renderStars = (rating: number) => {
+    const full = Math.floor(rating);
+    const half = rating % 1 >= 0.5;
+    const empty = 5 - full - (half ? 1 : 0);
+    return (
+      <div className="rating-stars">
+        {[...Array(full)].map((_, i) => <FaStar key={i} className="star star-filled" />)}
+        {half && <FaStarHalfAlt className="star star-half" />}
+        {[...Array(empty)].map((_, i) => <FaRegStar key={i} className="star star-empty" />)}
+      </div>
+    );
+  };
+
   useEffect(() => {
     if (isLoading) return;
 
@@ -52,17 +155,12 @@ export default function TutorProfilePage() {
     }
 
     let isMounted = true;
-    const abortController = new AbortController();
-
 
     const loadData = async () => {
-
-
       setLoading(true);
       try {
         if (tutorProfile) {
           if (!isMounted) return;
-          console.log(user);
           setTutor(tutorProfile);
           setIsOwner(true);
           setEditData({
@@ -75,9 +173,12 @@ export default function TutorProfilePage() {
           const tutorPosts = await getTutorPostsByTutorId(tutorProfile.id);
           if (!isMounted) return;
           setPosts(tutorPosts);
+          
+          await loadCities();
+          await loadReviews(tutorProfile.id);
         } else {
-          const request : UpdateTutorRequest = {
-            bio : '',
+          const request: UpdateTutorRequest = {
+            bio: '',
             education: '',
             experienceYears: 0,
             hourlyRate: 0
@@ -89,7 +190,7 @@ export default function TutorProfilePage() {
           setIsOwner(true);
         }
       } catch (error) {
-          console.error('Error loading tutor profile:', error);
+        console.error('Error loading tutor profile:', error);
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -99,13 +200,20 @@ export default function TutorProfilePage() {
 
     return () => {
       isMounted = false;
-      abortController.abort();
     };
   }, [user, tutorProfile]);
 
   useEffect(() => {
+    if (tutor) {
+      loadCities();
+      loadReviews(tutor.id);
+    }
+  }, [tutor]);
+
+  useEffect(() => {
     if (showModal) {
       loadCategories();
+      loadTags();
     }
   }, [showModal]);
 
@@ -126,7 +234,6 @@ export default function TutorProfilePage() {
 
   const handleDeletePost = async (postId: string) => {
     if (!confirm('Вы уверены, что хотите удалить это объявление?')) return;
-    
     try {
       await deleteTutorPost(postId);
       setPosts(posts.filter(post => post.id !== postId));
@@ -141,14 +248,12 @@ export default function TutorProfilePage() {
       alert('Заполните все обязательные поля');
       return;
     }
-
     try {
       const createdPost = await createTutorPost({
         subjectId: parseInt(newPost.subjectId),
         description: newPost.description,
         tagIds: newPost.tagsIds
       });
-
       setPosts([...posts, createdPost]);
       setShowModal(false);
       setNewPost({
@@ -169,22 +274,17 @@ export default function TutorProfilePage() {
       alert('Заполните все обязательные поля');
       return;
     }
-
     setUpdatingProfile(true);
     try {
       const updatedProfile = await updateTutorProfile(editData);
-      
       setTutor(updatedProfile);
-      
       setEditData({
         bio: updatedProfile.bio || '',
         education: updatedProfile.education || '',
         experienceYears: updatedProfile.experienceYears || 0,
         hourlyRate: updatedProfile.hourlyRate || 0
       });
-      
       saveTutorProfile(updatedProfile);
-      
       setShowEditModal(false);
       alert('Профиль успешно обновлен!');
     } catch (error) {
@@ -194,7 +294,6 @@ export default function TutorProfilePage() {
       setUpdatingProfile(false);
     }
   };
-
 
   const filteredSubjects = subjects.filter((subject: any) => {
     if (selectedSubcategory) {
@@ -260,23 +359,29 @@ export default function TutorProfilePage() {
         <div className="tutor-profile-header card">
           <div className="profile-header-grid">
             <div className="avatar-placeholder">
-              <div className="avatar-icon">{user?.firstName[0]}</div>
+              {user?.avatarUrl ? 
+                <img src={appConfig.serverUrl + user.avatarUrl} className="user-avatar-image" alt="avatar" /> : 
+                <div className="avatar-icon">{user?.firstName?.[0]}</div>
+              }
             </div>
             
             <div className="profile-info">
               {user && (
                 <div className="profile-header-row">
                   <h1 className="profile-name">{user.firstName} {user.lastName}</h1>
-                   {isOwner && (
-                    <button
-                      onClick={() => setShowEditModal(true)}
-                      className="btn btn-secondary btn-small"
-                    >
+                  {isOwner && (
+                    <button onClick={() => setShowEditModal(true)} className="btn btn-secondary btn-small">
                       Редактировать
                     </button>
                   )}
                 </div>
               )}
+
+              <div className="profile-rating">
+                {renderStars(averageRating)}
+                <span className="rating-value">{averageRating.toFixed(1)}</span>
+                <span className="reviews-count">({totalReviews} {totalReviews === 1 ? 'отзыв' : 'отзывов'})</span>
+              </div>
               
               <div className="profile-details-grid">
                 <div className="profile-detail">
@@ -292,6 +397,32 @@ export default function TutorProfilePage() {
                   <p className="hourly-rate">{tutor?.hourlyRate || 0} ₽/час</p>
                 </div>
               </div>
+
+              <div className="profile-cities">
+                <h3><FaCity /> Города преподавания</h3>
+                <div className="cities-list">
+                  {cities.map(city => (
+                    <span key={city.id} className="city-tag">
+                      {city.name}
+                      <button className="city-remove" onClick={() => handleRemoveCity(city.id)}>✕</button>
+                    </span>
+                  ))}
+                  <button className="btn btn-secondary btn-small" onClick={() => { loadAllCities(); setShowCitySelector(!showCitySelector); }}>
+                    + Добавить город
+                  </button>
+                </div>
+                {showCitySelector && (
+                  <div className="city-selector">
+                    <select value={selectedCityId} onChange={e => setSelectedCityId(e.target.value)} className="form-input">
+                      <option value="">Выберите город</option>
+                      {availableCities.filter(c => !cities.some(cc => cc.id === c.id)).map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                    <button className="btn btn-primary btn-small" onClick={handleAddCity}>Добавить</button>
+                  </div>
+                )}
+              </div>
               
               <div className="profile-bio">
                 <h3>О себе</h3>
@@ -299,89 +430,122 @@ export default function TutorProfilePage() {
                   {tutor?.bio || 'Описание пока не добавлено'}
                 </div>
               </div>
-              
-              {!isOwner && isAuthenticated && (
-                <button
-                  onClick={() => router.push(`/chat?tutor=${tutor?.id}`)}
-                  className="btn btn-primary"
-                >
-                  Написать репетитору
-                </button>
-              )}
             </div>
           </div>
         </div>
 
-        <div className="tutor-posts card">
-          <div className="posts-header">
-            <h2>Мои объявления</h2>
-            {isOwner && (
-              <button
-                onClick={() => setShowModal(true)}
-                className="btn btn-primary"
-              >
-                + Добавить объявление
-              </button>
-            )}
-          </div>
-          
-          {posts.length === 0 ? (
-            <div className="no-posts">
-              Пока нет объявлений
+      {/* Вкладки */}
+      <div className="profile-tabs">
+        <button 
+          className={`tab-btn ${activeTab === 'posts' ? 'active' : ''}`} 
+          onClick={() => setActiveTab('posts')}
+        >
+          Мои объявления
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'reviews' ? 'active' : ''}`} 
+          onClick={() => setActiveTab('reviews')}
+        >
+          Отзывы ({totalReviews})
+        </button>
+      </div>
+
+        {activeTab === 'posts' && (
+          <div className="tutor-posts card">
+            <div className="posts-header">
+              <h2>Мои объявления</h2>
+              {isOwner && (
+                <button onClick={() => setShowModal(true)} className="btn btn-primary">
+                  + Добавить объявление
+                </button>
+              )}
             </div>
-          ) : (
-            <div className="posts-grid">
-              {posts.map((post) => (
-                <div key={post.id} className="post-card card-shadow">
-                  <div className="post-header">
-                    <div>
-                      <h3 className="post-title">{post.subjectName}</h3>
-                      <span className={`status-badge ${getStatusClass(post.status)}`}>
-                        {getStatusText(post.status)}
-                      </span>
-                    </div>
-                    {isOwner && (
-                      <div className="post-actions">
-                        <button
-                          onClick={() => handleDeletePost(post.id)}
-                          className="btn btn-danger btn-small"
-                        >
-                          Удалить
-                        </button>
+            
+            {posts.length === 0 ? (
+              <div className="no-posts">Пока нет объявлений</div>
+            ) : (
+              <div className="posts-grid">
+                {posts.map((post) => (
+                  <div key={post.id} className="post-card card-shadow">
+                    <div className="post-header">
+                      <div>
+                        <h3 className="post-title">{post.subjectName}</h3>
+                        <span className={`status-badge ${getStatusClass(post.status)}`}>
+                          {getStatusText(post.status)}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                  
-                  <p className="post-description text-truncate-2">
-                    {post.description}
-                  </p>
-                  
-                  <div className="post-footer">
-                    <div className="post-rate">
-                      {post.hourlyRate} ₽/час
+                      {isOwner && (
+                        <div className="post-actions">
+                          <button onClick={() => handleDeletePost(post.id)} className="btn btn-danger btn-small">
+                            Удалить
+                          </button>
+                        </div>
+                      )}
                     </div>
                     
-                    {post.tags.length > 0 && (
-                      <div className="post-tags">
-                        {post.tags.map((tag, index) => (
-                          <span key={index} className="tag">
-                            {tag}
-                          </span>
-                        ))}
+                    <p className="post-description text-truncate-2">
+                      {post.description}
+                    </p>
+                    
+                    <div className="post-footer">
+                      <div className="post-rate">
+                        {post.hourlyRate} ₽/час
+                      </div>
+                      
+                      {post.tags.length > 0 && (
+                        <div className="post-tags">
+                          {post.tags.map((tag, index) => (
+                            <span key={index} className="tag">{tag.name}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    
+                    {post.status === 2 && post.adminComment && (
+                      <div className="admin-comment">
+                        <strong>Комментарий модератора:</strong> {post.adminComment}
                       </div>
                     )}
                   </div>
-                  
-                  {post.status === 2 && post.adminComment && (
-                    <div className="admin-comment">
-                      <strong>Комментарий модератора:</strong> {post.adminComment}
-                    </div>
-                  )}
-                </div>
-              ))}
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'reviews' && (
+          <div className="reviews-section card">
+            <div className="reviews-header">
+              <h2>Отзывы о вас</h2>
             </div>
-          )}
-        </div>
+            <div className="reviews-list">
+              {reviews.length === 0 ? (
+                <div className="no-reviews">Пока нет отзывов</div>
+              ) : (
+                reviews.map(review => (
+                  <div key={review.id} className="review-item">
+                    <div className="review-header">
+                      <div className="review-user">
+                        {review.avatarUrl ? 
+                          <img src={appConfig.serverUrl + review.avatarUrl} alt="" className="review-avatar" /> : 
+                          <div className="review-avatar">{review.userName[0]}</div>
+                        }
+                        <strong>{review.userName}</strong>
+                      </div>
+                      <div className="review-rating">
+                        {renderStars(review.rating)}
+                      </div>
+                      <div className="review-date">
+                        {new Date(review.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div className="review-text">{review.text}</div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {showModal && (
@@ -389,100 +553,47 @@ export default function TutorProfilePage() {
           <div className="modal-content">
             <div className="modal-header">
               <h2>Создать объявление</h2>
-              <button
-                onClick={() => setShowModal(false)}
-                className="modal-close"
-              >
-                &times;
-              </button>
+              <button onClick={() => setShowModal(false)} className="modal-close">&times;</button>
             </div>
-            
             <div className="modal-body">
               <div className="form-group">
                 <label className="form-label">Категория</label>
-                <select
-                  className="form-input"
-                  value={selectedCategory}
-                  onChange={(e) => {
-                    setSelectedCategory(e.target.value);
-                    setSelectedSubcategory('');
-                    setNewPost({ ...newPost, subjectId: '' });
-                  }}
-                >
+                <select className="form-input" value={selectedCategory} onChange={(e) => { setSelectedCategory(e.target.value); setSelectedSubcategory(''); setNewPost({ ...newPost, subjectId: '' }); }}>
                   <option value="">Выберите категорию</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
+                  {categories.map((cat) => (<option key={cat.id} value={cat.id}>{cat.name}</option>))}
                 </select>
               </div>
-              
               <div className="form-group">
                 <label className="form-label">Подкатегория</label>
-                <select
-                  className="form-input"
-                  value={selectedSubcategory}
-                  onChange={(e) => {
-                    setSelectedSubcategory(e.target.value);
-                    setNewPost({ ...newPost, subjectId: '' });
-                  }}
-                  disabled={!selectedCategory}
-                >
+                <select className="form-input" value={selectedSubcategory} onChange={(e) => { setSelectedSubcategory(e.target.value); setNewPost({ ...newPost, subjectId: '' }); }} disabled={!selectedCategory}>
                   <option value="">Выберите подкатегорию</option>
-                  {subcategories
-                    .filter((sc) => sc.categoryId === parseInt(selectedCategory))
-                    .map((sc) => (
-                      <option key={sc.id} value={sc.id}>
-                        {sc.name}
-                      </option>
-                    ))}
+                  {subcategories.filter((sc) => sc.categoryId === parseInt(selectedCategory)).map((sc) => (<option key={sc.id} value={sc.id}>{sc.name}</option>))}
                 </select>
               </div>
-              
               <div className="form-group">
                 <label className="form-label">Предмет</label>
-                <select
-                  className="form-input"
-                  value={newPost.subjectId}
-                  onChange={(e) => setNewPost({ ...newPost, subjectId: e.target.value })}
-                  disabled={!selectedCategory || (!selectedSubcategory && subcategories.length > 0)}
-                >
+                <select className="form-input" value={newPost.subjectId} onChange={(e) => setNewPost({ ...newPost, subjectId: e.target.value })} disabled={!selectedCategory || (!selectedSubcategory && subcategories.length > 0)}>
                   <option value="">Выберите предмет</option>
-                  {filteredSubjects.map((subject) => (
-                    <option key={subject.id} value={subject.id}>
-                      {subject.name}
-                    </option>
-                  ))}
+                  {filteredSubjects.map((subject) => (<option key={subject.id} value={subject.id}>{subject.name}</option>))}
                 </select>
               </div>
-              
               <div className="form-group">
                 <label className="form-label">Описание</label>
-                <textarea
-                  className="form-input"
-                  value={newPost.description}
-                  onChange={(e) => setNewPost({ ...newPost, description: e.target.value })}
-                  placeholder="Опишите ваше предложение..."
-                  rows={4}
-                />
+                <textarea className="form-input" value={newPost.description} onChange={(e) => setNewPost({ ...newPost, description: e.target.value })} rows={4} />
               </div>
-            
-            
+              <div className="form-group">
+                <label>Теги</label>
+                <div className="tags-selector">
+                  {allTags.map(tag => (
+                    <button key={tag.id} type="button" className={`tag-select-btn ${newPost.tagsIds.includes(tag.id) ? 'active' : ''}`} onClick={() => toggleTag(tag.id)}>
+                      {tag.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="modal-actions">
-                <button
-                  onClick={handleCreatePost}
-                  className="btn btn-primary"
-                  disabled={!newPost.subjectId || !newPost.description}
-                >
-                  Создать объявление
-                </button>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="btn btn-secondary"
-                >
-                  Отмена
-                </button>
+                <button onClick={handleCreatePost} className="btn btn-primary" disabled={!newPost.subjectId || !newPost.description}>Создать объявление</button>
+                <button onClick={() => setShowModal(false)} className="btn btn-secondary">Отмена</button>
               </div>
             </div>
           </div>
@@ -494,78 +605,30 @@ export default function TutorProfilePage() {
           <div className="modal-content">
             <div className="modal-header">
               <h2>Редактировать профиль</h2>
-              <button
-                onClick={() => setShowEditModal(false)}
-                className="modal-close"
-                disabled={updatingProfile}
-              >
-                &times;
-              </button>
+              <button onClick={() => setShowEditModal(false)} className="modal-close" disabled={updatingProfile}>&times;</button>
             </div>
-            
             <div className="modal-body">
               <div className="form-group">
                 <label className="form-label">Образование</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={editData.education}
-                  onChange={(e) => setEditData({...editData, education: e.target.value})}
-                  placeholder="Укажите ваше образование"
-                />
+                <input type="text" className="form-input" value={editData.education} onChange={(e) => setEditData({...editData, education: e.target.value})} />
               </div>
-              
               <div className="form-group">
                 <label className="form-label">Опыт работы (лет)</label>
-                <input
-                  type="number"
-                  className="form-input"
-                  value={editData.experienceYears}
-                  onChange={(e) => setEditData({...editData, experienceYears: parseInt(e.target.value) || 0})}
-                  min="0"
-                  max="50"
-                  placeholder="Укажите опыт работы"
-                />
+                <input type="number" className="form-input" value={editData.experienceYears} onChange={(e) => setEditData({...editData, experienceYears: parseInt(e.target.value) || 0})} min="0" max="50" />
               </div>
-              
               <div className="form-group">
                 <label className="form-label">Стоимость за час (₽)</label>
-                <input
-                  type="number"
-                  className="form-input"
-                  value={editData.hourlyRate}
-                  onChange={(e) => setEditData({...editData, hourlyRate: parseInt(e.target.value) || 0})}
-                  min="0"
-                  placeholder="Укажите стоимость занятий"
-                />
+                <input type="number" className="form-input" value={editData.hourlyRate} onChange={(e) => setEditData({...editData, hourlyRate: parseInt(e.target.value) || 0})} min="0" />
               </div>
-              
               <div className="form-group">
                 <label className="form-label">О себе</label>
-                <textarea
-                  className="form-input"
-                  value={editData.bio}
-                  onChange={(e) => setEditData({...editData, bio: e.target.value})}
-                  placeholder="Расскажите о себе, своем подходе к обучению, профессиональных навыках..."
-                  rows={6}
-                />
+                <textarea className="form-input" value={editData.bio} onChange={(e) => setEditData({...editData, bio: e.target.value})} rows={6} />
               </div>
-            
               <div className="modal-actions">
-                <button
-                  onClick={handleUpdateProfile}
-                  className="btn btn-primary"
-                  disabled={updatingProfile || !editData.education.trim() || !editData.bio.trim()}
-                >
+                <button onClick={handleUpdateProfile} className="btn btn-primary" disabled={updatingProfile || !editData.education.trim() || !editData.bio.trim()}>
                   {updatingProfile ? 'Сохранение...' : 'Сохранить изменения'}
                 </button>
-                <button
-                  onClick={() => setShowEditModal(false)}
-                  className="btn btn-secondary"
-                  disabled={updatingProfile}
-                >
-                  Отмена
-                </button>
+                <button onClick={() => setShowEditModal(false)} className="btn btn-secondary" disabled={updatingProfile}>Отмена</button>
               </div>
             </div>
           </div>

@@ -6,6 +6,8 @@ interface Tutor
     education : string;
     experienceYears : number;
     hourlyRate : number;
+    averageRating?: number;
+    totalReviews?: number;
 }
 
 interface TutorsRequest {

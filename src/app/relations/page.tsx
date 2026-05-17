@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { FaUser } from 'react-icons/fa';
+import { FaComment, FaFile, FaLink, FaPlus, FaTrash, FaUser } from 'react-icons/fa';
 import { 
   getLessons, 
   createLesson, 
@@ -13,6 +13,12 @@ import './relations.css';
 import { getAssignmentsByLessonId, uploadAssignment, deleteAssignment, getAssigmentDownloadUrl, uploadAssignmentFromSavedContent } from '@/services/assignments';
 import { getMyStudents, getMyTutors, deleteRelation } from '@/services/relation';
 import { deleteSavedContent, getSavedContent } from '@/services/saved-content';
+
+import { addTask, getTasks, deleteTask, getTaskDownloadUrl } from '@/services/lesson-tasks';
+import { addComment, getComments, deleteComment } from '@/services/lesson-comments';
+import { appConfig } from '../../../next.config';
+
+import { getFolders } from '@/services/saved-content';
 
 export default function RelationsPage() {
   const { user, tutorProfile, isAuthenticated, isLoading: authLoading, logout } = useAuth();
@@ -32,9 +38,25 @@ export default function RelationsPage() {
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+  const [folders, setFolders] = useState<SavedContentFolderDto[]>([]);
+  const [selectedSavedFolderId, setSelectedSavedFolderId] = useState<string | null>(null);
+  const [isLoadingFolders, setIsLoadingFolders] = useState(false);
+
   const [savedContents, setSavedContents] = useState<SavedContentDto[] | null>(null);
   const [showSavedContentSelector, setShowSavedContentSelector] = useState(false);
   const [isLoadingSavedContents, setIsLoadingSavedContents] = useState(false);
+
+  const [lessonTasks, setLessonTasks] = useState<LessonTaskDto[]>([]);
+  const [showAddTaskForm, setShowAddTaskForm] = useState(false);
+  const [newTaskLink, setNewTaskLink] = useState('');
+  const [newTaskFile, setNewTaskFile] = useState<File | null>(null);
+  const [taskType, setTaskType] = useState<'file' | 'link'>('file');
+  const [isLoadingTasks, setIsLoadingTasks] = useState(false);
+
+  const [lessonComments, setLessonComments] = useState<LessonCommentDto[]>([]);
+  const [newCommentText, setNewCommentText] = useState('');
+  const [showAddCommentForm, setShowAddCommentForm] = useState(false);
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
 
   useEffect(() => {
     if(authLoading) return;
@@ -107,8 +129,12 @@ export default function RelationsPage() {
     if (!isTutor) return;
     try {
       setIsLoadingSavedContents(true);
-      const contents = await getSavedContent();
+      const [contents, foldersData] = await Promise.all([
+        getSavedContent(),
+        getFolders()
+      ]);
       setSavedContents(contents || []);
+      setFolders(foldersData || []);
     } catch (error) {
       console.error('Error loading saved contents:', error);
     } finally {
@@ -134,11 +160,119 @@ export default function RelationsPage() {
     }
   }, [selectedRelation, loadLessons]);
 
+  const loadLessonTasks = useCallback(async () => {
+    if (!selectedLesson) return;
+    try {
+      setIsLoadingTasks(true);
+      const tasks = await getTasks(selectedLesson.id);
+      setLessonTasks(tasks || []);
+    } catch (error) {
+      console.error('Error loading lesson tasks:', error);
+    } finally {
+      setIsLoadingTasks(false);
+    }
+  }, [selectedLesson]);
+
+  const loadLessonComments = useCallback(async () => {
+    if (!selectedLesson) return;
+    try {
+      setIsLoadingComments(true);
+      const comments = await getComments(selectedLesson.id);
+      setLessonComments(comments || []);
+    } catch (error) {
+      console.error('Error loading lesson comments:', error);
+    } finally {
+      setIsLoadingComments(false);
+    }
+  }, [selectedLesson]);
+
   useEffect(() => {
     if (selectedLesson) {
       loadAssignments();
+      loadLessonTasks(); 
+      loadLessonComments();
     }
-  }, [selectedLesson, loadAssignments]);
+  }, [selectedLesson, loadAssignments, loadLessonTasks, loadLessonComments]);
+
+  const handleAddTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedLesson) return;
+    try {
+      let taskData: { file?: File; link?: string } = {};
+      if (taskType === 'file' && newTaskFile) {
+        taskData.file = newTaskFile;
+      } else if (taskType === 'link' && newTaskLink.trim()) {
+        taskData.link = newTaskLink.trim();
+      } else {
+        alert('Заполните поле файл или ссылку');
+        return;
+      }
+      await addTask(selectedLesson.id, taskData);
+      await loadLessonTasks();
+      setNewTaskFile(null);
+      setNewTaskLink('');
+      setShowAddTaskForm(false);
+    } catch (error) {
+      console.error('Error adding task:', error);
+      alert('Ошибка при добавлении ответа');
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    if (!selectedLesson) return;
+    if (confirm('Вы уверены, что хотите удалить этот ответ?')) {
+      try {
+        await deleteTask(selectedLesson.id, taskId);
+        await loadLessonTasks();
+      } catch (error) {
+        console.error('Error deleting task:', error);
+        alert('Ошибка при удалении ответа');
+      }
+    }
+  };
+
+  const handleDownloadTaskFile = async (task: LessonTaskDto) => {
+    if (task.type === 0 && task.id) { 
+      const url = await getTaskDownloadUrl(task.id);
+      if (url) {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = task.fileName || 'task-file';
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }
+    }
+  };
+
+  const handleAddComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedLesson || !newCommentText.trim()) return;
+    try {
+      await addComment(selectedLesson.id, newCommentText);
+      await loadLessonComments();
+      setNewCommentText('');
+      setShowAddCommentForm(false);
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      alert('Ошибка при добавлении комментария');
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!selectedLesson) return;
+    if (confirm('Удалить комментарий?')) {
+      try {
+        await deleteComment(selectedLesson.id, commentId);
+        await loadLessonComments();
+      } catch (error) {
+        console.error('Error deleting comment:', error);
+        alert('Ошибка при удалении комментария');
+      }
+    }
+  };
 
   const handleDeleteRelation = async (relation: Relation) => {
     if (confirm('Вы уверены, что хотите удалить ученика из списка?')) {
@@ -244,6 +378,11 @@ export default function RelationsPage() {
     }
   };
 
+  const filteredSavedContents = savedContents?.filter(content => {
+    if (selectedSavedFolderId === null) return true;
+    return content.folderId === selectedSavedFolderId;
+  }) || [];
+
   const handleDownloadFile = async (assignment: Assignment) => {
     const url = await getAssigmentDownloadUrl(assignment);
     if (url) {
@@ -318,7 +457,10 @@ export default function RelationsPage() {
                       onClick={() => setSelectedRelation(relation)}
                     >
                       <div className="relation-avatar">
-                        {person?.charAt(0).toUpperCase() || 'U'}
+                        {isTutor ? 
+                        (relation.studentAvatarUrl ? <img src={appConfig.serverUrl + relation.studentAvatarUrl} className="user-avatar-image"/> :  person?.charAt(0).toUpperCase() || 'U') :
+                        (relation.tutorAvatarUrl ? <img src={appConfig.serverUrl + relation.tutorAvatarUrl} className="user-avatar-image"/> :  person?.charAt(0).toUpperCase() || 'U')
+                        }
                       </div>
                       <div className="relation-info">
                         <div className="relation-name">{person}</div>
@@ -350,7 +492,10 @@ export default function RelationsPage() {
                 <div className="selected-person-header">
                   <div className="selected-person-info">
                     <div className="selected-person-avatar">
-                      {getPersonFromRelation(selectedRelation)?.charAt(0).toUpperCase() || 'U'}
+                        {isTutor ? 
+                        (selectedRelation.studentAvatarUrl ? <img src={appConfig.serverUrl + selectedRelation.studentAvatarUrl} className="user-avatar-image"/> :  getPersonFromRelation(selectedRelation)?.charAt(0).toUpperCase() || 'U') :
+                        (selectedRelation.tutorAvatarUrl ? <img src={appConfig.serverUrl + selectedRelation.tutorAvatarUrl} className="user-avatar-image"/> :  getPersonFromRelation(selectedRelation)?.charAt(0).toUpperCase() || 'U')
+                        }
                     </div>
                     <div>
                       <h3>{getPersonFromRelation(selectedRelation)}</h3>
@@ -502,31 +647,55 @@ export default function RelationsPage() {
                             </div>
                           </form>
                         ) : (
-                          <div className="saved-contents-list">
-                            {isLoadingSavedContents && <div className="loading-small">Загрузка списка...</div>}
-                            {!isLoadingSavedContents && savedContents && savedContents.length === 0 && (
-                              <div className="empty-message">Нет сохранённых файлов. Сначала загрузите файлы в раздел "Мои файлы".</div>
-                            )}
-                            {savedContents && savedContents.map(content => (
-                              <div key={content.id} className="saved-content-item">
-                                <div className="saved-content-info">
-                                  <div className="saved-content-name">{content.fileName}</div>
-                                  <div className="saved-content-details">
-                                    <span>{(content.fileSize / 1024).toFixed(2)} KB</span>
-                                    <span>{new Date(content.createdAt).toLocaleDateString()}</span>
-                                  </div>
-                                </div>
-                                <div className="saved-content-actions">
+                          <div className="saved-content-picker">
+                              <div className="folder-tabs">
+                                <button
+                                  className={`tab-button ${selectedSavedFolderId === null ? 'active' : ''}`}
+                                  onClick={() => setSelectedSavedFolderId(null)}
+                                >
+                                  Все файлы ({savedContents?.length || 0})
+                                </button>
+                                {folders.map(folder => (
                                   <button
-                                    className="btn btn-primary btn-small"
-                                    onClick={() => handleAddFromSavedContent(content.id)}
+                                    key={folder.id}
+                                    className={`tab-button ${selectedSavedFolderId === folder.id ? 'active' : ''}`}
+                                    onClick={() => setSelectedSavedFolderId(folder.id)}
                                   >
-                                    Добавить к уроку
+                                    {folder.name} ({folder.itemCount})
                                   </button>
-                                </div>
+                                ))}
                               </div>
-                            ))}
-                          </div>
+
+                              <div className="saved-contents-list">
+                                {isLoadingSavedContents && <div className="loading-small">Загрузка списка...</div>}
+                                {!isLoadingSavedContents && filteredSavedContents.length === 0 && (
+                                  <div className="empty-message">
+                                    {selectedSavedFolderId === null 
+                                      ? 'Нет сохранённых файлов. Загрузите файлы в раздел "Мои файлы".'
+                                      : 'В этой папке нет файлов.'}
+                                  </div>
+                                )}
+                                {filteredSavedContents.map(content => (
+                                  <div key={content.id} className="saved-content-item">
+                                    <div className="saved-content-info">
+                                      <div className="saved-content-name">{content.fileName}</div>
+                                      <div className="saved-content-details">
+                                        <span>{(content.fileSize / 1024).toFixed(2)} KB</span>
+                                        <span>{new Date(content.createdAt).toLocaleDateString()}</span>
+                                      </div>
+                                    </div>
+                                    <div className="saved-content-actions">
+                                      <button
+                                        className="btn btn-primary btn-small"
+                                        onClick={() => handleAddFromSavedContent(content.id)}
+                                      >
+                                        Добавить к уроку
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
                         )}
                       </div>
                     )}
@@ -564,6 +733,193 @@ export default function RelationsPage() {
                                 </button>
                               )}
                             </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {selectedLesson && (
+                  <div className="tasks-section">
+                    <div className="tasks-header">
+                      <h4>Ответы ученика</h4>
+                      {!isTutor && (
+                        <button 
+                          className="btn btn-secondary btn-small"
+                          onClick={() => setShowAddTaskForm(!showAddTaskForm)}
+                        >
+                          {showAddTaskForm ? 'Отмена' : <><FaPlus /> Добавить ответ</>}
+                        </button>
+                      )}
+                    </div>
+
+                    {showAddTaskForm && !isTutor && (
+                      <div className="card add-task-form">
+                        <form onSubmit={handleAddTask}>
+                          <div className="form-group">
+                            <label>Тип ответа</label>
+                            <div className="task-type-switch">
+                              <button
+                                type="button"
+                                className={`type-btn ${taskType === 'file' ? 'active' : ''}`}
+                                onClick={() => setTaskType('file')}
+                              >
+                                <FaFile /> Файл
+                              </button>
+                              <button
+                                type="button"
+                                className={`type-btn ${taskType === 'link' ? 'active' : ''}`}
+                                onClick={() => setTaskType('link')}
+                              >
+                                <FaLink /> Ссылка
+                              </button>
+                            </div>
+                          </div>
+
+                          {taskType === 'file' ? (
+                            <div className="form-group">
+                              <label>Выберите файл</label>
+                              <input
+                                type="file"
+                                onChange={(e) => setNewTaskFile(e.target.files?.[0] || null)}
+                                required
+                                className="form-input"
+                              />
+                            </div>
+                          ) : (
+                            <div className="form-group">
+                              <label>Ссылка (URL)</label>
+                              <input
+                                type="url"
+                                value={newTaskLink}
+                                onChange={(e) => setNewTaskLink(e.target.value)}
+                                placeholder="https://..."
+                                required
+                                className="form-input"
+                              />
+                            </div>
+                          )}
+
+                          <div className="form-actions">
+                            <button type="submit" className="btn btn-primary">
+                              Отправить ответ
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    )}
+
+                    {isLoadingTasks && <div className="loading-small">Загрузка ответов...</div>}
+                    <div className="tasks-list">
+                      {lessonTasks.length === 0 && !isLoadingTasks ? (
+                        <div className="empty-message">Ответов пока нет</div>
+                      ) : (
+                        lessonTasks.map(task => (
+                          <div key={task.id} className="task-item">
+                            <div className="task-info">
+                              <div className="task-type-badge">
+                                {task.type === 0 ? <FaFile /> : <FaLink />}
+                                {task.type === 0 ? 'Файл' : 'Ссылка'}
+                              </div>
+                              <div className="task-details">
+                                {task.type === 0 ? (
+                                  <span className="task-name">{task.fileName}</span>
+                                ) : (
+                                  <a href={task.link ?? ""} target="_blank" rel="noopener noreferrer" className="task-link">
+                                    {task.link}
+                                  </a>
+                                )}
+                                <div className="task-meta">
+                                  <span>От: {task.studentName}</span>
+                                  <span>{new Date(task.createdAt).toLocaleDateString()}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="task-actions">
+                              {task.type === 0 && (
+                                <button
+                                  className="btn btn-secondary btn-small"
+                                  onClick={() => handleDownloadTaskFile(task)}
+                                >
+                                  Скачать
+                                </button>
+                              )}
+                              {!isTutor && (
+                                <button
+                                  className="btn btn-danger btn-small"
+                                  onClick={() => handleDeleteTask(task.id)}
+                                >
+                                  <FaTrash />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {selectedLesson && (
+                  <div className="comments-section">
+                    <div className="comments-header">
+                      <h4><FaComment /> Комментарии репетитора</h4>
+                      {isTutor && (
+                        <button 
+                          className="btn btn-secondary btn-small"
+                          onClick={() => setShowAddCommentForm(!showAddCommentForm)}
+                        >
+                          {showAddCommentForm ? 'Отмена' : 'Добавить комментарий'}
+                        </button>
+                      )}
+                    </div>
+
+                    {showAddCommentForm && isTutor && (
+                      <div className="card add-comment-form">
+                        <form onSubmit={handleAddComment}>
+                          <div className="form-group">
+                            <label>Текст комментария</label>
+                            <textarea
+                              value={newCommentText}
+                              onChange={(e) => setNewCommentText(e.target.value)}
+                              rows={3}
+                              required
+                              className="form-input"
+                            />
+                          </div>
+                          <div className="form-actions">
+                            <button type="submit" className="btn btn-primary">
+                              Опубликовать
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    )}
+
+                    {isLoadingComments && <div className="loading-small">Загрузка комментариев...</div>}
+                    <div className="comments-list">
+                      {lessonComments.length === 0 && !isLoadingComments ? (
+                        <div className="empty-message">Комментариев пока нет</div>
+                      ) : (
+                        lessonComments.map(comment => (
+                          <div key={comment.id} className="comment-item">
+                            <div className="comment-header">
+                              <strong>{comment.tutorName}</strong>
+                              <span className="comment-date">
+                                {new Date(comment.createdAt).toLocaleString()}
+                              </span>
+                              {isTutor && (
+                                <button
+                                  className="btn-icon btn-danger"
+                                  onClick={() => handleDeleteComment(comment.id)}
+                                  title="Удалить"
+                                >
+                                  ✕
+                                </button>
+                              )}
+                            </div>
+                            <div className="comment-text">{comment.text}</div>
                           </div>
                         ))
                       )}
