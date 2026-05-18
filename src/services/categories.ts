@@ -19,7 +19,7 @@ export async function getCategories(): Promise<Category[]> {
 
 export async function createCategory(data: CreateCategoryRequest): Promise<Category> {
   try {
-    const result = await fetchWithAuth('/${ENDPOINT}', {
+    const result = await fetchWithAuth(`/${ENDPOINT}`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
