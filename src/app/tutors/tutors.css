@@ -186,6 +186,10 @@
   .tutors-grid {
     grid-template-columns: 1fr;
   }
+
+  .search-input-group {
+    flex-direction: column;
+  }
 }
 
 .tutor-card {

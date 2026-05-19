@@ -108,7 +108,7 @@ export function useAuth(): UseAuthReturn {
       setUser(response.user);
       
       if (registerData.role === 1) {
-        window.location.href = '/tutor/profile-setup';
+        window.location.href = '/tutor/profile';
       } else {
         window.location.href = '/';
       }

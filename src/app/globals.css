@@ -793,7 +793,7 @@ body {
   }
 
   .main-content {
-    padding: 90px var(--space-4) var(--space-4);
+    padding: 90px var(--space-1);
   }
 
   .footer-content {

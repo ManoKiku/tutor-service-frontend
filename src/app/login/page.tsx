@@ -114,11 +114,11 @@ export default function LoginPage() {
               Зарегистрироваться
             </Link>
           </p>
-          <p className="auth-link-text">
+         {/*<p className="auth-link-text">
             <Link href="/forgot-password" className="auth-link">
               Забыли пароль?
             </Link>
-          </p>
+          </p>*/}
         </div>
       </div>
     </div>

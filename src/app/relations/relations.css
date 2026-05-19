@@ -781,9 +781,16 @@ textarea.form-input {
   .comment-header {
     flex-wrap: wrap;
   }
+
+  .assignment-item {
+    padding: var(--space-1);
+  }
+
+  .assignment-actions {
+    flex-direction: column;
+  }
 }
 
-/* Папки в выборе сохранённых файлов */
 .saved-content-picker .folder-tabs {
   display: flex;
   flex-wrap: wrap;

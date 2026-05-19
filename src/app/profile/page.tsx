@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, use } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { updateUserProfile, changePassword, uploadAvatar, deleteAvatar, getUserAvatarUrl } from '@/services/users';
 import { clearAuthData, saveAuthData, getAuthData } from '@/lib/auth';
@@ -120,8 +120,11 @@ export default function ProfilePage() {
       await uploadAvatar(user.id, file);
       const newUrl = await getUserAvatarUrl(user.id);
       if (avatarUrl?.startsWith('blob:')) URL.revokeObjectURL(avatarUrl);
+      user.avatarUrl = `/api/users/${user.id}/avatar`;
+      localStorage.setItem('user', JSON.stringify(user));
       setAvatarUrl(newUrl);
       alert('Аватар загружен');
+      window.location.reload();
     } catch (error: any) {
       console.error(error);
       alert(error.message || 'Ошибка загрузки аватара');
@@ -140,6 +143,9 @@ export default function ProfilePage() {
       if (avatarUrl?.startsWith('blob:')) URL.revokeObjectURL(avatarUrl);
       setAvatarUrl(null);
       alert('Аватар удалён');
+      user.avatarUrl = null;
+      localStorage.setItem('user', JSON.stringify(user));
+      window.location.reload();
     } catch (error: any) {
       console.error(error);
       alert(error.message || 'Ошибка удаления аватара');

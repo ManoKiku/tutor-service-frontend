@@ -445,7 +445,7 @@ export default function AdminPage() {
                     </div>
                     <p className="text-truncate-2">{post.description}</p>
                     <div className="admin-post-meta">
-                      Ставка: ${post.hourlyRate}/час • 
+                      Ставка: {post.hourlyRate} р. /час • 
                       Статус: {post.status === 0 ? 'На модерации' : post.status === 1 ? 'Одобрено' : 'Отклонено'}
                     </div>
                   </div>

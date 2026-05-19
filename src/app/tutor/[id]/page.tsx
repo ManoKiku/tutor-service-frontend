@@ -234,7 +234,7 @@ export default function PublicTutorProfilePage() {
                 </div>
                 <div className="profile-detail">
                   <h3>Стоимость</h3>
-                  <p className="hourly-rate">{tutor.hourlyRate || 0} ₽/час</p>
+                  <p className="hourly-rate">{tutor.hourlyRate || 0} р. /час</p>
                 </div>
               </div>
 
@@ -287,7 +287,7 @@ export default function PublicTutorProfilePage() {
                         <h3 className="post-title">{post.subjectName}</h3>
                         <span className="status-badge status-published">Опубликовано</span>
                       </div>
-                      <div className="post-rate">{post.hourlyRate} ₽/час</div>
+                      <div className="post-rate">{post.hourlyRate} р. /час</div>
                     </div>
                     <p className="post-description">{post.description}</p>
                     {post.tags.length > 0 && (

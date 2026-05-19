@@ -183,10 +183,10 @@
 
   .upload-form .form-group {
     width: 100%;
+    min-width: auto;
   }
 }
 
-/* Управление папками */
 .folder-management {
   margin-bottom: var(--space-8);
   background: var(--bg-page);

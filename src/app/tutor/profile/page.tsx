@@ -394,7 +394,7 @@ export default function TutorProfilePage() {
                 </div>
                 <div className="profile-detail">
                   <h3>Стоимость</h3>
-                  <p className="hourly-rate">{tutor?.hourlyRate || 0} ₽/час</p>
+                  <p className="hourly-rate">{tutor?.hourlyRate || 0} р. /час</p>
                 </div>
               </div>
 
@@ -489,7 +489,7 @@ export default function TutorProfilePage() {
                     
                     <div className="post-footer">
                       <div className="post-rate">
-                        {post.hourlyRate} ₽/час
+                        {post.hourlyRate} р. /час
                       </div>
                       
                       {post.tags.length > 0 && (
@@ -617,7 +617,7 @@ export default function TutorProfilePage() {
                 <input type="number" className="form-input" value={editData.experienceYears} onChange={(e) => setEditData({...editData, experienceYears: parseInt(e.target.value) || 0})} min="0" max="50" />
               </div>
               <div className="form-group">
-                <label className="form-label">Стоимость за час (₽)</label>
+                <label className="form-label">Стоимость за час (р.)</label>
                 <input type="number" className="form-input" value={editData.hourlyRate} onChange={(e) => setEditData({...editData, hourlyRate: parseInt(e.target.value) || 0})} min="0" />
               </div>
               <div className="form-group">
